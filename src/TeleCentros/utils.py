@@ -26,6 +26,7 @@ import thread
 import urllib2
 import threading
 import traceback
+import subprocess
 
 try:
     import dl
