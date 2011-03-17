@@ -33,6 +33,8 @@ from TeleCentros.ui.utils import get_gtk_builder
 from TeleCentros.logout_actions import ActionManager
 from TeleCentros.script_actions import ScriptManager
 from TeleCentros.utils import HttpDownload
+from TeleCentros.get_macaddr import get_route_mac_address
+from TeleCentros.jsonrequester import JSONRequester
 
 # Check DBus
 try:
@@ -71,7 +73,6 @@ class Client:
     update_time_handler_id = 0
     cleanup_apps_id = 0
     cleanup_apps_timeout = 30
-    currency = "US$" #by default
     interative = True
     login_attempts = 0
     blocked = True
@@ -96,7 +97,7 @@ class Client:
             self.os_version = o[1]
         
         #BACKGROUND MD5SUM
-        if ospath.exists(BACKGROUND_CACHE):
+        if ospath.exists(BACKGROUND_CACHE): #TODO GET BACKGROUND 302
             try:
                 assert ospath.getsize(BACKGROUND_CACHE) < 2500000L, "Large Background"
                 self.background_md5 = md5_cripto(open(BACKGROUND_CACHE).read())
@@ -116,19 +117,16 @@ class Client:
                 self.logger.error(error)
                 self.logo_md5 = None
         
-        self.hash_id = self.conf_client.get_string('hash_id')
+        self.mac_id = get_route_mac_address()
         self.server = self.conf_client.get_string('server')
         self.port = self.conf_client.get_int('port')
         
         if not self.port:
-            self.port = 4558
+            self.port = 80
         
-        self.netclient = NetClient(self.server, self.port,
-                            CLIENT_TLS_CERT, CLIENT_TLS_KEY, self.hash_id)
-        
-        self.netclient.connect('connected', self.connected)
-        self.netclient.connect('disconnected', self.disconnected)
-        self.netclient.dispatch_func = self.dispatch
+    
+        self.json_requester = JSONRequester(self.server, self.port)
+        self.json_requester.run()
         
         #icons
         self.icons = icons.Icons()
@@ -167,8 +165,8 @@ class Client:
         self.login_window = login.Login(self)
         self.login_window.run()
         
-        if not self.netclient.start():
-            self.login_window.set_connected(False)
+        #if not self.netclient.start():
+        #    self.login_window.set_connected(False)
     
     def on_window_delete_event(self, *args):
         self.on_show_hide(None)
@@ -236,15 +234,6 @@ class Client:
         
         for key in data:
             self.informations[key] = data[key]
-        
-        if 'ticket_suport' in data:
-            self.login_window.set_ticket_suport(self.informations['ticket_suport'])
-        
-        if 'login_suport' in data:
-            self.login_window.set_login_suport(self.informations['login_suport'])
-        
-        if 'ticket_size' in data:
-            self.login_window.max_ticket_size = data['ticket_size']
         
         if 'welcome_msg' in data:
             self.login_window.set_title(
@@ -365,9 +354,7 @@ class Client:
         elif action == 2: #logout
             ActionManager.logout()
     
-    def unblock(self, data):
-        assert isinstance(data, dict)
-        
+    def unblock(self):
         # Execute a pre unblock script
         self.script_manager.pre_unblock()
         self.blocked = False
@@ -382,7 +369,7 @@ class Client:
         self.show_informations(True)
         self.show_time_elapsed(True)
         self.show_time_remaining(True)
-        
+        """
         if self.cleanup_apps_id > 0:
             gobject.source_remove(self.cleanup_apps_id)
             self.cleanup_apps_id = 0
@@ -410,8 +397,9 @@ class Client:
             self.xml.get_object("remaining_label").set_property('visible', bool(data['limited']))
             self.xml.get_object("remaining_pb").set_property('visible', bool(data['limited']))
             self.xml.get_object("time_remaining_menuitem").set_property('sensitive', bool(data['limited']))
-        
+
         self.start_monitory_status()
+        """
         self.login_window.unlock(None)
 
         # execute a pos unblock script
@@ -467,7 +455,7 @@ class Client:
         else:
             print method, params
             return True
-    
+    """ 
     def reload_network(self):
         self.netclient = NetClient(self.server, self.port,
                             CLIENT_TLS_CERT, CLIENT_TLS_KEY, self.hash_id)
@@ -475,7 +463,7 @@ class Client:
         self.netclient.connect('connected', self.connected)
         self.netclient.connect('disconnected', self.disconnected)
         self.netclient.dispatch_func = self.dispatch
-        
+    """    
     def update_time_status(self):
         if not self.update_time:
             self.update_time_handler_id = gobject.timeout_add(1000, 
@@ -615,24 +603,30 @@ class Client:
         if self.interative:
             self.show_time_remaining(obj.get_active())
     
-    def on_login_response(self, obj, value):
+    def on_login_response(self, response):
         self.login_window.set_lock_all(False)
+
+        if response.error:
+            self.login_window.set_current(login.LOGIN_USER)
+            self.login_window.err_box.set_text(str(response.error))
+            #TODO: SHOW ERROR
+            return
+
+        if response.json_data:
+            obj = response.json_data
+            if not obj:
+                self.login_window.set_current(login.LOGIN_USER)
+                self.login_window.err_box.set_text(_("Bad Response"))
         
-        if value==True:
-            self.login_attempts = 0
-        elif value==False:
-            self.login_attempts += 1
-            self.login_window.err_box.set_text(
-                            _("Incorrect username or password."))
-        elif value==2:
-            self.login_attempts = 0
-            self.login_window.err_box.set_text(
-                            _("Insufficient Credits."))
-        
-        elif value==3:
-            self.login_attempts = 0
-            self.login_window.err_box.set_text(
-                            _("Permission Denied"))
+            if obj.has_key('authenticated'):
+                if obj['authenticated']:
+                    self.login_attempts = 0
+                    self.unblock()
+                    
+            if obj.has_key('error') and obj['error']:
+                self.login_attempts += 1
+                self.login_window.set_current(login.LOGIN_USER)
+                self.login_window.err_box.set_text(obj['error'])
         
         if self.login_attempts >= 3:
             self.login_window.set_lock_all(True)
@@ -643,40 +637,14 @@ class Client:
                 gobject.source_remove(self.login_window.iterable_timeout_id)
             
             self.login_window.on_ready_iterable()
-            
+
         self.login_window.set_current(login.LOGIN_USER)
-        
-    def on_ticket_response(self, obj, value):
-        self.login_window.set_lock_all(False)
-        
-        if value==True:
-            self.login_attempts = 0
-        elif value==False:
-            self.login_attempts += 1
-            self.login_window.err_box.set_text(
-                            _("Ticket Invalid."))
-                
-        if self.login_attempts >= 3:
-            self.login_window.set_lock_all(True)
-            self.login_window.on_ready_run_interable = True
-            self.login_window.on_ready = 60
-            
-            if self.login_window.iterable_timeout_id:
-                gobject.source_remove(self.login_window.iterable_timeout_id)
-            
-            self.login_window.on_ready_iterable()
-            
-        self.login_window.set_current(login.LOGIN_TICKET)
         
     def on_login(self, username, password):
         self.login_window.set_lock_all(True)
-        request = self.netclient.request('login', (username, password))
-        request.connect("done", self.on_login_response)
+        self.json_requester.request('POST', {'cmd': 'login', 'user':username, 'password': password},
+                                    self.on_login_response, None) #TODO: Implement Session
         
-    def on_ticket(self, ticket):
-        self.login_window.set_lock_all(True)
-        request = self.netclient.request('send_ticket', ticket)
-        request.connect('done', self.on_ticket_response)
     
     def on_logout_menuitem_activate(self, obj):
         dlg = gtk.MessageDialog(parent=self.main_window,
@@ -689,8 +657,8 @@ class Client:
         response = dlg.run()
         dlg.destroy()
         
-        if response == gtk.RESPONSE_YES:
-            self.netclient.request('logout')
+        #if response == gtk.RESPONSE_YES:
+        #    self.netclient.request('logout')
             
 
     def system_shutdown(self):
@@ -762,7 +730,7 @@ class Client:
     def get_background(self):
         data = {'server': self.server, 
                 'port': 4559,
-                'hash_id': self.hash_id}
+                'mac_id': self.mac_id}
         
         url = "http://%(server)s:%(port)d/get_background/%(hash_id)s" % data
         
@@ -776,7 +744,7 @@ class Client:
     def get_logo(self):
         data = {'server': self.server, 
                 'port': 4559,
-                'hash_id': self.hash_id}
+                'mac_id': self.mac_id}
         
         url = "http://%(server)s:%(port)d/get_logo/%(hash_id)s" % data
         

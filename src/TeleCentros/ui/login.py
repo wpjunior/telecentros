@@ -30,11 +30,9 @@ _ = gettext.gettext
 HOUR_24_FORMAT = True
 
 (LOGIN_AUTH_NONE,
- LOGIN_AUTH_LOGIN,
- LOGIN_AUTH_TICKET,
- LOGIN_AUTH_ADMIN) = range(4)
+ LOGIN_AUTH_LOGIN) = range(2)
 
-(LOGIN_USER, LOGIN_PASSWORD, LOGIN_TICKET) = range(3)
+(LOGIN_USER, LOGIN_PASSWORD) = range(2)
 
 BUTTON_EVENTS = (gtk.gdk.BUTTON_PRESS , gtk.gdk._2BUTTON_PRESS,
                     gtk.gdk._3BUTTON_PRESS, gtk.gdk.BUTTON_RELEASE)
@@ -42,15 +40,12 @@ BUTTON_EVENTS = (gtk.gdk.BUTTON_PRESS , gtk.gdk._2BUTTON_PRESS,
 KEY_EVENTS = (gtk.gdk.KEY_PRESS, gtk.gdk.KEY_RELEASE)
 
 class Login:
-    
-    ticket_suport = False
-    login_suport = False
+    login_suport = True
     timeout_connect = 15
     run_interable = False
-    selected_auth = LOGIN_AUTH_NONE
+    selected_auth = LOGIN_AUTH_LOGIN
     current_widget = LOGIN_USER
-    max_ticket_size = 8
-    max_nick_size = 14
+    max_nick_size = 30
     iterable_timeout_id = 0
     on_ready = 60
     on_ready_run_interable = False
@@ -81,12 +76,8 @@ class Login:
         self.imagealign = xml.get_object('imagealign')
         self.wm_title = xml.get_object('wm_title')
         self.xml = xml
-        #self.login_radio_item = self.xml.get_object("login_radio_item")
-        self.ticket_radio_item = self.xml.get_object("ticket_button")
-        self.admin_radio_item = self.xml.get_object("admin_radio_item")
         self.err_box = self.xml.get_object("err_box")
         
-        self.ticket = None
         self.password = None
         self.username = None
         self.running = True
@@ -118,10 +109,6 @@ class Login:
     def on_entry_changed(self, obj):
         if self.current_widget in (LOGIN_USER, LOGIN_PASSWORD):
             self.okbnt.set_sensitive(bool(obj.get_text()))
-            
-        elif self.current_widget == LOGIN_TICKET:
-            self.okbnt.set_sensitive(
-                    len(obj.get_text())==self.max_ticket_size)
     
     def on_entry_insert_text(self, obj, new_str, length, position):
         position = obj.get_position()
@@ -136,22 +123,7 @@ class Login:
                 obj.insert_text(new_str.lower(), position)
                 idle_add(obj.set_position, position+1)
             
-            elif new_str.isdigit() or new_str.islower():
-                return
-            else:
-                obj.stop_emission('insert-text')
-        
-        elif self.current_widget == LOGIN_TICKET:
-            if len(obj.get_text()) >= self.max_ticket_size:
-                obj.stop_emission('insert-text')
-                return
-            
-            if new_str.isalpha() and new_str.islower():
-                obj.stop_emission('insert-text')
-                obj.insert_text(new_str.upper(), position)
-                idle_add(obj.set_position, position+1)
-                
-            elif new_str.isdigit() or new_str.isupper():
+            elif new_str.isdigit() or new_str.islower() or new_str in ('@', '-', '_', '.'):
                 return
             else:
                 obj.stop_emission('insert-text')
@@ -171,10 +143,6 @@ class Login:
                 self.main.on_login(self.username, self.password)
                 self.username = None
                 self.password = None
-        else:
-            self.ticket = self.entry.get_text()
-            self.main.on_ticket(self.ticket)
-            self.ticket = None
     
     def on_againbnt_clicked(self, obj):
         if self.selected_auth == LOGIN_AUTH_LOGIN:
@@ -185,7 +153,7 @@ class Login:
         
         if auth_widget == LOGIN_USER:
             self.selected_auth = LOGIN_AUTH_LOGIN
-            self.label.set_text(_('_Username:'))
+            self.label.set_text(_('_E-Mail:'))
             self.entry.set_visibility(True)
             self.againbnt.set_sensitive(False)
         
@@ -194,13 +162,6 @@ class Login:
             self.label.set_text(_('_Password:'))
             self.entry.set_visibility(False)
             self.againbnt.set_sensitive(True)
-        
-        if auth_widget == LOGIN_TICKET:
-            #self.err_box.set_text("")
-            self.selected_auth = LOGIN_AUTH_TICKET
-            self.label.set_text(_('_Ticket:'))
-            self.entry.set_visibility(True)
-            self.againbnt.set_sensitive(False)
         
         self.entry.set_text('')
         self.label.set_use_underline(True)
@@ -258,7 +219,7 @@ class Login:
             self.label.set_text("")
         else:
             self.set_current(self.current_widget)
-    
+    """
     def iterable(self):
         if self.timeout_connect != 0:
             if self.run_interable:
@@ -281,7 +242,7 @@ class Login:
                 self.run_interable = True
                 self.timeout_connect = 15
                 self.iterable_timeout_id = timeout_add(1000, self.iterable)
-    
+    """
     def on_ready_iterable(self):
         if self.on_ready != 0:
             if self.on_ready_run_interable:
@@ -301,7 +262,8 @@ class Login:
             self.set_lock_all(False)
             self.on_ready_run_interable = False
             self.warn_msg.set_text("")
-        
+            self.main.login_attempts = 0
+    """    
     def set_connected(self, status):
         self.set_lock_all(not(status))
         
@@ -324,27 +286,8 @@ class Login:
             
             self.warn_msg.set_text('')
             self.wm_title.set_text(_("OpenLanhouse Client - Connected"))
-    
-    def set_ticket_suport(self, status):
-        
-        self.ticket_suport = status
-        
-        if not(status) and not(self.login_suport):
-            self.set_lock_all(True)
-            self.ticket_radio_item.set_sensitive(False)
-            return
-        else:
-            self.set_lock_all(False)
-            
-        if not(status) and self.login_suport:
-            self.ticket_radio_item.set_active(False)
-            self.ticket_radio_item.set_sensitive(False)
-        elif status and not(self.login_suport):
-            self.ticket_radio_item.set_active(True)
-            self.ticket_radio_item.set_sensitive(False)
-        else:
-            self.ticket_radio_item.set_sensitive(True)
-    
+    """
+
     def set_login_suport(self, status):
         self.login_suport = status
         
@@ -378,17 +321,6 @@ class Login:
         
     #    self.set_current(LOGIN_USER)
         
-    def on_ticket_button_toggled(self, obj):
-        if not obj.get_active():
-            self.set_current(LOGIN_USER)
-        else:
-            self.set_current(LOGIN_TICKET)
-    
-    def on_admin_radio_item_toggled(self, obj):
-        if not obj.get_active():
-            return
-        
-        print "admin"
 
     def set_warn_message(self, message):
         self.warn_msg.set_text(message)

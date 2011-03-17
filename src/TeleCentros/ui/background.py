@@ -199,17 +199,18 @@ class X11LockScreenWindow(gtk.Window):
             self.grab(self.child_window)
         
     def ungrab(self, window):
-        window.hide()
+
         self.grabed_window = None
         window.set_keep_above(False)
         gtk.gdk.pointer_ungrab()
         gtk.gdk.keyboard_ungrab()
-        
+        window.hide()
         if self.grab_connect_id > 0:
             gobject.source_remove(self.grab_connect_id)
             self.grab_connect_id = 0
 
     def grab(self, window, att=0):
+
         window.show()
         self.grabed_window = window
         self.set_left_cursor(window)

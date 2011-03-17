@@ -40,7 +40,6 @@ UI_PATH = ospath.join(CUR_PATH, 'ui')
 ICON_PATH = ospath.join(CUR_PATH, 'icons')
 STATUS_ICON_PATH = ospath.join(ICON_PATH, 'status')
 
-
 USER_PATH = ospath.expanduser('~')
 
 CONFIG_PREFIX = ospath.join(USER_PATH, '.config')
@@ -97,6 +96,7 @@ MIN_PASSWORD = 5
 MAX_PASSWORD = 32
 PREVIEW_SIZE = 200
 
+DEFAULT_PATH = '/proxy/'
 #PORT CONF
 SERVER_PORT = 4558
 MAX_CHUNK_SIZE = 10485760

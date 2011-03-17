@@ -1,0 +1,22 @@
+* A comunicação entre o telecentro os e o proxy server é totalmente feita pelo protocolo http e os dados são retornados pelo formato json
+* Todo pedido será realizado atraves da url http://servidor/proxy/ tendo os methods POST e GET
+
+* LOGIN *
+** ENVIO **
+{
+'cmd' = 'login', /* FIXO: Especificando que irá realizar um login */
+'username' = 'usuario@etc.etc', /* VARIAVEL: Email para realizar login */
+'password' = 'senhaetc124', /* VARIAVEL: Senha para realizar o login */
+}
+
+** RESPOSTA **
+{
+'authenticated': true, /* Booleano: true/false; Variavel se true permite o desbloqueio da tela */
+'error': null, /* VARIAVEL: Null/String; Caso aconteça algum erro */
+'http_proxy': { /* Array com os dados para setar o proxy */
+        'username': 'usuario1243', // usuario para autenticação do proxy
+        'password': 'usuario1243', // senha para a autenticação do proxy
+        'host': '198.56.65.158', // host para o acesso ao proxy
+        'port': 3128, // porta para o acesso ao proxy
+    },
+}

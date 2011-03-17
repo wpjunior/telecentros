@@ -133,6 +133,7 @@ class TeleCentros:
         self.stop_gnome_screensaver()
         
         try:
+            gtk.threads_init()
             gtk.main()
         except:
             pass

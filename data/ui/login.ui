@@ -1,32 +1,30 @@
 <?xml version="1.0"?>
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <ui>
-      <menubar name="menubar"/>
-    </ui>
-  </object>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkUIManager" id="uimanager1"/>
   <object class="GtkWindow" id="login">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="type">GTK_WINDOW_POPUP</property>
+    <property name="type">popup</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
-    <property name="window_position">GTK_WIN_POS_CENTER_ALWAYS</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_NOTIFICATION</property>
+    <property name="window_position">center-always</property>
+    <property name="type_hint">notification</property>
     <property name="decorated">False</property>
-    <signal handler="drag_end" name="drag_end"/>
+    <signal name="drag_end" handler="drag_end"/>
     <child>
       <object class="GtkFrame" id="frame1">
         <property name="visible">True</property>
         <property name="label_xalign">1</property>
         <property name="label_yalign">0</property>
-        <property name="shadow_type">GTK_SHADOW_IN</property>
+        <property name="shadow_type">in</property>
         <child>
           <object class="GtkFrame" id="frame2">
             <property name="visible">True</property>
             <property name="border_width">1</property>
             <property name="label_xalign">0</property>
             <property name="label_yalign">0</property>
-            <property name="shadow_type">GTK_SHADOW_IN</property>
+            <property name="shadow_type">in</property>
             <child>
               <object class="GtkVBox" id="vbox1">
                 <property name="visible">True</property>
@@ -41,12 +39,13 @@
                             <property name="visible">True</property>
                             <property name="xpad">4</property>
                             <property name="ypad">4</property>
-                            <property name="label" translatable="yes">OpenLanhouse Client: Disconnected</property>
+                            <property name="label" translatable="yes">Telecentros</property>
                             <property name="use_markup">True</property>
                             <property name="use_underline">True</property>
                           </object>
                           <packing>
                             <property name="padding">4</property>
+                            <property name="position">0</property>
                           </packing>
                         </child>
                       </object>
@@ -54,10 +53,11 @@
                   </object>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkMenuBar" constructor="uimanager1" id="menubar">
+                  <object class="GtkMenuBar" id="menubar">
                     <property name="visible">True</property>
                   </object>
                   <packing>
@@ -98,7 +98,7 @@
                               <object class="GtkLabel" id="title">
                                 <property name="visible">True</property>
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                <property name="label" translatable="yes">&lt;big&gt;&lt;big&gt;&lt;big&gt;Welcome&lt;/big&gt;&lt;/big&gt;&lt;/big&gt;</property>
+                                <property name="label" translatable="yes">&lt;big&gt;&lt;big&gt;&lt;big&gt;Bem vindo&lt;/big&gt;&lt;/big&gt;&lt;/big&gt;</property>
                                 <property name="use_markup">True</property>
                                 <property name="use_underline">True</property>
                               </object>
@@ -112,44 +112,50 @@
                                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                 <property name="spacing">6</property>
                                 <child>
-                                  <object class="GtkToggleButton" id="ticket_button">
+                                  <object class="GtkButton" id="register">
+                                    <property name="label" translatable="yes">Cadastrar</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
-                                    <property name="label" translatable="yes">_Ticket</property>
-                                    <property name="use_underline">True</property>
-                                    <signal handler="on_ticket_button_toggled" name="toggled"/>
+                                    <signal name="clicked" handler="register_clicked_cb"/>
                                   </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">0</property>
+                                  </packing>
                                 </child>
                                 <child>
                                   <object class="GtkButton" id="againbnt">
+                                    <property name="label" translatable="yes">_Iniciar novamente</property>
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                    <property name="label" translatable="yes">_Start Again</property>
                                     <property name="use_underline">True</property>
-                                    <signal handler="on_againbnt_clicked" name="clicked"/>
+                                    <signal name="clicked" handler="on_againbnt_clicked"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
+                                    <property name="fill">False</property>
                                     <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
                                   <object class="GtkButton" id="okbnt">
+                                    <property name="label">gtk-ok</property>
                                     <property name="visible">True</property>
                                     <property name="sensitive">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">True</property>
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                    <property name="label" translatable="yes">gtk-ok</property>
                                     <property name="use_stock">True</property>
-                                    <signal handler="activate" name="clicked"/>
+                                    <signal name="clicked" handler="activate"/>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
+                                    <property name="fill">False</property>
                                     <property name="position">2</property>
                                   </packing>
                                 </child>
@@ -173,7 +179,7 @@
                                 <property name="top_attach">6</property>
                                 <property name="bottom_attach">7</property>
                                 <property name="x_options">GTK_FILL</property>
-                                <property name="y_options"/>
+                                <property name="y_options"></property>
                                 <property name="y_padding">10</property>
                               </packing>
                             </child>
@@ -194,18 +200,18 @@
                                 <property name="width_request">250</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="events"/>
+                                <property name="events"></property>
                                 <property name="activates_default">True</property>
-                                <signal handler="on_entry_changed" name="changed"/>
-                                <signal handler="on_entry_event" name="event"/>
-                                <signal handler="on_event_after" name="event"/>
-                                <signal handler="on_entry_insert_text" name="insert_text"/>
-                                <signal handler="activate" name="activate"/>
+                                <signal name="changed" handler="on_entry_changed"/>
+                                <signal name="event" handler="on_entry_event"/>
+                                <signal name="event" handler="on_event_after"/>
+                                <signal name="insert_text" handler="on_entry_insert_text"/>
+                                <signal name="activate" handler="activate"/>
                               </object>
                               <packing>
                                 <property name="top_attach">4</property>
                                 <property name="bottom_attach">5</property>
-                                <property name="y_options"/>
+                                <property name="y_options"></property>
                                 <property name="x_padding">10</property>
                               </packing>
                             </child>
@@ -216,7 +222,7 @@
                                 <property name="xalign">0</property>
                                 <property name="xpad">10</property>
                                 <property name="ypad">5</property>
-                                <property name="label" translatable="yes">_Username:</property>
+                                <property name="label" translatable="yes">_E-Mail:</property>
                                 <property name="use_markup">True</property>
                                 <property name="use_underline">True</property>
                                 <property name="wrap">True</property>
@@ -224,7 +230,7 @@
                               <packing>
                                 <property name="top_attach">3</property>
                                 <property name="bottom_attach">4</property>
-                                <property name="y_options"/>
+                                <property name="y_options"></property>
                               </packing>
                             </child>
                             <child>
@@ -252,8 +258,8 @@
                       <object class="GtkViewport" id="viewport1">
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="resize_mode">GTK_RESIZE_QUEUE</property>
-                        <property name="shadow_type">GTK_SHADOW_NONE</property>
+                        <property name="resize_mode">queue</property>
+                        <property name="shadow_type">none</property>
                         <child>
                           <placeholder/>
                         </child>
@@ -274,7 +280,7 @@
                             <property name="visible">True</property>
                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                             <property name="label_xalign">0</property>
-                            <property name="shadow_type">GTK_SHADOW_IN</property>
+                            <property name="shadow_type">in</property>
                             <child>
                               <object class="GtkEventBox" id="eventbox1">
                                 <property name="visible">True</property>
@@ -283,12 +289,12 @@
                                     <property name="visible">True</property>
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                     <property name="stock">gtk-missing-image</property>
-                                    <property name="icon_size">6</property>
+                                    <property name="icon-size">6</property>
                                   </object>
                                 </child>
                               </object>
                             </child>
-                            <child type="label">
+                            <child type="label_item">
                               <placeholder/>
                             </child>
                           </object>
@@ -306,12 +312,12 @@
                 </child>
               </object>
             </child>
-            <child type="label">
+            <child type="label_item">
               <placeholder/>
             </child>
           </object>
         </child>
-        <child type="label">
+        <child type="label_item">
           <placeholder/>
         </child>
       </object>
