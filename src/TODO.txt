@@ -2,5 +2,13 @@ TODO:
 
 * HttpDownload com suport a response 304 para evitar que baixe novamente o arquivo - baixa
 * Reconectar caso dê erro na postagem de informações - média
-* Sign-up com Webkit - Alta
-
+* Sign-up com Webkit - Alta - Tests
+* Mover Arquivos de Configurações para /etc - média
+* Bloquear não e-mail no buttão ok - muito baixa
+* Script para setar o proxy - medio
+* Logo do programa - muito baixa
+* Mudar tela de about - baixa
+* Medidor de Tempo - Média
+* Tradução via - gettext - média
+* Bloqueio Tela por tempo terminar- alta
+* Perguntar se há mais tempo no servidor - alta

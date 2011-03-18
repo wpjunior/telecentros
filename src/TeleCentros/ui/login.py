@@ -20,6 +20,7 @@ import sys
 from os import name as osname
 import time
 import gtk
+import webkit
 from gobject import timeout_add, idle_add, source_remove
 from time import strftime
 
@@ -296,4 +297,22 @@ class Login:
         self.warn_msg.set_text(message)
 
     def register_clicked_cb(self, obj, *args):
-        print 'register', self.main.sign_url
+        notebook = self.xml.get_object('notebook')
+        notebook.set_page(1)
+        webkitscrolled = self.xml.get_object('webkitscrolled')
+        webkitscrolled.set_size_request(640, 480)
+        webview = webkit.WebView()
+        webkitscrolled.add(webview)
+        webview.show()
+        webview.load_uri(self.main.sign_url)
+
+    def on_webwit_back_clicked(self, obj, *args):
+        notebook = self.xml.get_object('notebook')
+        notebook.set_page(0)
+        webkitscrolled = self.xml.get_object('webkitscrolled')
+        webkitscrolled.set_size_request(-1, -1)
+        webview = webkitscrolled.get_children()[0]
+        webkitscrolled.remove(webview)
+        webview.destroy()
+    
+        print 'back', webview

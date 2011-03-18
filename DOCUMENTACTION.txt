@@ -14,6 +14,8 @@
 {
 'authenticated': true, /* Booleano: true/false; Variavel se true permite o desbloqueio da tela */
 'error': null, /* VARIAVEL: Null/String; Caso aconteça algum erro */
+'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
+'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
 'http_proxy': { /* Array com os dados para setar o proxy */
         'username': 'usuario1243', // usuario para autenticação do proxy
         'password': 'usuario1243', // senha para a autenticação do proxy
@@ -39,7 +41,6 @@
     'name': 'Máquina 02 em Telecentro 3', // VARIAVEL: String; Identificação para o usuário reconhecer a maquina
     'background-url': 'http://imagens.fotoseimagens.etc.br/casal-linux_3193_1024x768.jpg'. //VARIAVEL: String\Nulo; Background da tela de Login
     'logo-url': 'http://imagens.fotoseimagens.etc.br/casal-linux_3193_1024x768.jpg'. //VARIAVEL: String\Nulo; Logo da tela de Login
-    'sign-support': true, //Variavel: Booleano; se true terá suporte a cadastrar os usuários
-    'sign-url': 'http://www.google.com.br/sign', //Variavel: String\Nulo; URL para informar qual site deverá acessar para cadastrar um usuário, nulo se 'sign-support' for false
+    'sign-url': 'http://www.google.com.br/sign', //Variavel: String\Nulo; URL para informar qual site deverá acessar para cadastrar um usuário, nulo se não houver suporte a cadastramento
     'welcome-msg': 'Bem Vindo', //Variavel: String\Nulo; variavel para informar a tela de boas vindas com o nome, nota: se null:Mantem 'Bem vindo'
 }

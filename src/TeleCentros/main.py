@@ -291,7 +291,7 @@ class Client:
         self.limited = False
         self.registred = False
         self.update_time = None
-        self.time = (0, 0)
+        self.time = 0
         self.reset_widgets()
         
         self.login_window.lock()
@@ -320,7 +320,7 @@ class Client:
         elif action == 2: #logout
             ActionManager.logout()
     
-    def unblock(self):
+    def unblock(self, time):
         # Execute a pre unblock script
         self.script_manager.pre_unblock()
         self.blocked = False
@@ -328,13 +328,19 @@ class Client:
         self.elapsed_time = 0
         self.left_time = 0
         self.update_time = None
-        self.time = (0, 0)
+        self.time = time
         
         self.show_window_menu.set_active(True)
         self.main_window.show()
         self.show_informations(True)
         self.show_time_elapsed(True)
         self.show_time_remaining(True)
+
+        if self.time:
+            time_str = "%0.2d:%0.2d:%0.2d" % humanize_time(self.time)
+            self.time_str.set_text(time_str)
+        else:
+            self.time_str.set_text(_("Unlimited"))
         """
         if self.cleanup_apps_id > 0:
             gobject.source_remove(self.cleanup_apps_id)
@@ -363,9 +369,8 @@ class Client:
             self.xml.get_object("remaining_label").set_property('visible', bool(data['limited']))
             self.xml.get_object("remaining_pb").set_property('visible', bool(data['limited']))
             self.xml.get_object("time_remaining_menuitem").set_property('sensitive', bool(data['limited']))
-
-        self.start_monitory_status()
         """
+        self.start_monitory_status()
         self.login_window.unlock(None)
 
         # execute a pos unblock script
@@ -421,33 +426,21 @@ class Client:
         else:
             print method, params
             return True
-    """ 
-    def reload_network(self):
-        self.netclient = NetClient(self.server, self.port,
-                            CLIENT_TLS_CERT, CLIENT_TLS_KEY, self.hash_id)
-        
-        self.netclient.connect('connected', self.connected)
-        self.netclient.connect('disconnected', self.disconnected)
-        self.netclient.dispatch_func = self.dispatch
-    """    
+
     def update_time_status(self):
-        if not self.update_time:
-            self.update_time_handler_id = gobject.timeout_add(1000, 
-                                                self.update_time_status)
-            return
-        
         now = int(time.time())
-        diff_secs = now - self.update_time
-        melapsed_time = self.elapsed_time + diff_secs
+  
+        melapsed_time = now - self.start_time
         self.dbus_manager.elapsed_time_changed(melapsed_time)
         time_elapsed_str = "%0.2d:%0.2d:%0.2d" % humanize_time(melapsed_time)
         
-        if self.limited:
-            mleft_time = self.left_time - diff_secs
+        if self.time:
+            mleft_time = self.time - melapsed_time
+            
             self.dbus_manager.left_time_changed(mleft_time)
             time_left_str = "%0.2d:%0.2d:%0.2d" % humanize_time(mleft_time)
-            time_left_per = float(mleft_time) / float(self.mtime)
-            time_elapsed_per = float(melapsed_time) / float(self.mtime)
+            time_left_per = float(mleft_time) / float(self.time)
+            time_elapsed_per = float(melapsed_time) / float(self.time)
         else:
             time_left_str = _("None")
             time_left_per = 0
@@ -457,13 +450,15 @@ class Client:
         self.elapsed_pb.set_fraction(time_elapsed_per)
         self.remaining_pb.set_text(time_left_str)
         self.remaining_pb.set_fraction(time_left_per)
+
         
         self.update_time_handler_id = gobject.timeout_add(1000,
                                         self.update_time_status)
     
     def monitory_status(self):
-        request = self.netclient.request('get_status')
-        request.connect("done", self.on_get_status_request_done)
+        print "TODO: GET STATUS ??"
+        #request = self.netclient.request('get_status')
+        #request.connect("done", self.on_get_status_request_done)
         self.monitory_handler_id = gobject.timeout_add(120000,
                                         self.monitory_status)
         
@@ -476,14 +471,10 @@ class Client:
             gobject.source_remove(self.monitory_handler_id)
         if self.update_time_handler_id:
             gobject.source_remove(self.update_time_handler_id)
-    
+    """
     def set_status(self, data):
         for key in data:
             self.other_info[key] = data[key]
-        
-        if 'full_name' in data:
-            self.full_name.set_text(data['full_name'])
-            self.dbus_manager.full_name_changed(data['full_name'])
         
         if 'time' in data and 'left_time' in data and 'elapsed' in data:
             self.update_time = int(time.time())
@@ -523,7 +514,7 @@ class Client:
             time_str = _("Unlimited")
         
         self.time_str.set_text(time_str)
-    
+    """
     def show_informations(self, status):
         self.interative = False
         self.xml.get_object("information_vbox").set_property('visible', status)
@@ -578,6 +569,13 @@ class Client:
             if obj.has_key('welcome-msg') and obj['welcome-msg']:
                 self.login_window.set_welcome_msg(obj['welcome-msg'])
 
+            if obj.has_key('sign-url') and obj['sign-url']:
+                self.sign_url = obj['sign-url']
+                self.login_window.register_bnt.set_sensitive(True)
+            else:
+                self.sign_url = None #explict
+                self.login_window.register_bnt.set_sensitive(False)
+
             if obj.has_key('background-url') and obj['background-url']:
                 err = self.get_background(obj['background-url'])
                 if err:
@@ -596,14 +594,6 @@ class Client:
             else:
                 self.login_window.set_logo(None)
 
-            sign_support = (obj.has_key('sign-support') and obj['sign-support'])
-            self.login_window.register_bnt.set_sensitive(sign_support)
-
-            if sign_support and obj.has_key('sign-url') and obj['sign-url']:
-                self.sign_url = obj['sign-url']
-            else:
-                self.sign_url = None #explict
-    
     def on_login_response(self, response):
         self.login_window.set_lock_all(False)
 
@@ -619,14 +609,26 @@ class Client:
                 self.login_window.err_box.set_text(_("Bad Response"))
         
             if obj.has_key('authenticated'):
-                if obj['authenticated']:
-                    self.login_attempts = 0
-                    self.unblock()
-                    
+                auth = bool(obj['authenticated'])
+
             if obj.has_key('error') and obj['error']:
                 self.login_attempts += 1
                 self.login_window.set_current(login.LOGIN_USER)
                 self.login_window.err_box.set_text(obj['error'])
+
+            if obj.has_key('time') and obj['time']:
+                rtime = int(obj['time'])
+            else:
+                rtime = None
+
+            if auth:
+                self.start_time = time.time()
+                self.login_attempts = 0
+                self.unblock(rtime)
+
+            if obj.has_key('full_name') and obj['full_name']:
+                self.full_name.set_text(obj['full_name'])
+                self.dbus_manager.full_name_changed(obj['full_name'])
         
         if self.login_attempts >= 3:
             self.login_window.set_lock_all(True)
@@ -643,7 +645,7 @@ class Client:
     def on_login(self, username, password):
         self.login_window.set_lock_all(True)
         self.json_requester.request('POST', {'cmd': 'login', 'mac': self.mac_id, 'username':username, 'password': password},
-                                    self.on_login_response, None) #TODO: Implement Session
+                                    self.on_login_response, None)
         
     
     def on_logout_menuitem_activate(self, obj):
