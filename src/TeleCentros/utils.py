@@ -27,6 +27,7 @@ import urllib2
 import threading
 import traceback
 import subprocess
+import shutil
 
 try:
     import dl
@@ -204,7 +205,7 @@ class HttpDownload(gobject.GObject):
 
             # Now create a temp file there
             tmpfile_handle, tmpfile_path = tempfile.mkstemp('.incomplete',\
-                                                            'openlh-client')
+                                                            'telecentros')
 
             while not self.cancelled:
                 data = res.read(self.CHUNKSIZE)
@@ -223,7 +224,7 @@ class HttpDownload(gobject.GObject):
                 except:
                     pass
             else:
-                os.rename(tmpfile_path, os.path.join(self.directory, self.fn))
+                shutil.move(tmpfile_path, os.path.join(self.directory, self.fn))
 
         except (urllib2.HTTPError, urllib2.URLError, IOError), e:
             self.err = self.get_error_msg_from_error (e)

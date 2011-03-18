@@ -81,6 +81,7 @@ class Client:
     registred = False
     os_name = ""
     os_version = ""
+    sign_url = None
     
     def __init__(self):
         
@@ -96,37 +97,18 @@ class Client:
         if o[1]:
             self.os_version = o[1]
         
-        #BACKGROUND MD5SUM
-        if ospath.exists(BACKGROUND_CACHE): #TODO GET BACKGROUND 302
-            try:
-                assert ospath.getsize(BACKGROUND_CACHE) < 2500000L, "Large Background"
-                self.background_md5 = md5_cripto(open(BACKGROUND_CACHE).read())
-            except Exception, error:
-                self.logger.error(error)
-                self.background_md5 = None
-        
-        if self.background_md5:
-            self.logger.info("Background Md5sum is %s" % self.background_md5)
-        
-        #LOGO MD5SUM
-        if ospath.exists(LOGO_CACHE):
-            try:
-                assert ospath.getsize(LOGO_CACHE) < 2500000L, "Large Logo"
-                self.logo_md5 = md5_cripto(open(LOGO_CACHE).read())
-            except Exception, error:
-                self.logger.error(error)
-                self.logo_md5 = None
-        
         self.mac_id = get_route_mac_address()
         self.server = self.conf_client.get_string('server')
         self.port = self.conf_client.get_int('port')
         
         if not self.port:
             self.port = 80
-        
     
         self.json_requester = JSONRequester(self.server, self.port)
         self.json_requester.run()
+        self.json_requester.request('POST', {'cmd': 'identify', 'mac': self.mac_id, 'os_name': self.os_name,
+                                             'os_version': self.os_version},
+                                    self.on_identify_response, None)
         
         #icons
         self.icons = icons.Icons()
@@ -139,8 +121,6 @@ class Client:
         self.elapsed_pb = self.xml.get_object('elapsed_pb')
         self.remaining_pb = self.xml.get_object('remaining_pb')
         self.full_name = self.xml.get_object('full_name')
-        self.credit = self.xml.get_object('credit')
-        self.total_to_pay = self.xml.get_object('total_to_pay')
         self.tray_menu = self.xml.get_object('tray_menu')
         self.show_window_menu = self.xml.get_object('show_window_menu')
         
@@ -155,8 +135,8 @@ class Client:
         self.xml.connect_signals(self)
         
         #Tray
-        self.tray_icon = gtk.status_icon_new_from_icon_name("openlh-client")
-        self.tray_icon.set_tooltip(_("OpenLanhouse - Client"))
+        self.tray_icon = gtk.status_icon_new_from_icon_name("telecentros")
+        self.tray_icon.set_tooltip(_("TeleCentros"))
         
         self.tray_icon.connect('popup-menu', self.on_tray_popup_menu)
         self.tray_icon.connect('activate', self.on_show_hide)
@@ -199,18 +179,6 @@ class Client:
     def on_about_menuitem_activate(self, obj):
         dialogs.about(self.logo, self.main_window)
     
-    def send_myos(self):
-        self.netclient.request("set_myos", (self.os_name, self.os_version))
-        
-    def connected(self, obj, server):
-        self.login_window.set_connected(True)
-        gobject.timeout_add(10000,
-                            self.send_myos)
-        
-    def disconnected(self, obj):
-        self.block(False, 0)
-        self.login_window.set_connected(False)
-        
     def set_myinfo(self, data):
         if data.has_key('name'):
             self.name = data['name']
@@ -270,9 +238,7 @@ class Client:
         print self.informations
         
     def reset_widgets(self):
-        self.credit.set_text("")
         self.full_name.set_text("")
-        self.total_to_pay.set_text("")
         self.elapsed_pb.set_text("")
         self.elapsed_pb.set_fraction(0.0)
         self.remaining_pb.set_text("")
@@ -515,22 +481,9 @@ class Client:
         for key in data:
             self.other_info[key] = data[key]
         
-        if 'credit' in data:
-            self.credit.set_text(
-                    "%s %0.2f" % (self.currency, data['credit']))
-            self.dbus_manager.credit_changed(data['credit'])
-            self.dbus_manager.credit_changed_as_string("%s %0.2f" % 
-                                        (self.currency, data['credit']))
-        
         if 'full_name' in data:
             self.full_name.set_text(data['full_name'])
             self.dbus_manager.full_name_changed(data['full_name'])
-        
-        if 'total_to_pay' in data:
-            ats = "%s %0.2f" % (self.currency, data['total_to_pay'])
-            self.total_to_pay.set_text(ats)
-            self.dbus_manager.total_to_pay_changed(data['total_to_pay'])
-            self.dbus_manager.total_to_pay_changed_as_string(ats)
         
         if 'time' in data and 'left_time' in data and 'elapsed' in data:
             self.update_time = int(time.time())
@@ -602,6 +555,54 @@ class Client:
     def on_time_remaining_toggled(self, obj):
         if self.interative:
             self.show_time_remaining(obj.get_active())
+
+    def on_identify_response(self, response):
+        self.login_window.set_lock_all(False)
+
+        if response.error:
+            self.login_window.err_box.set_text(str(response.error))
+            #TODO: re-connect in 1 min
+            return
+
+        if response.json_data:
+            obj = response.json_data
+
+            if not obj:
+                self.login_window.err_box.set_text(_("Bad Response"))
+                return
+                #TODO: re-connect in 1 min
+
+            if obj.has_key('name') and obj['name']:
+                self.login_window.set_title(obj['name'])
+
+            if obj.has_key('welcome-msg') and obj['welcome-msg']:
+                self.login_window.set_welcome_msg(obj['welcome-msg'])
+
+            if obj.has_key('background-url') and obj['background-url']:
+                err = self.get_background(obj['background-url'])
+                if err:
+                    print err
+                else:
+                    self.login_window.set_background(BACKGROUND_CACHE)
+            else:
+                self.login_window.set_background(None)
+
+            if obj.has_key('logo-url') and obj['logo-url']:
+                err = self.get_logo(obj['logo-url'])
+                if err:
+                    print err
+                else:
+                    self.login_window.set_logo(LOGO_CACHE)
+            else:
+                self.login_window.set_logo(None)
+
+            sign_support = (obj.has_key('sign-support') and obj['sign-support'])
+            self.login_window.register_bnt.set_sensitive(sign_support)
+
+            if sign_support and obj.has_key('sign-url') and obj['sign-url']:
+                self.sign_url = obj['sign-url']
+            else:
+                self.sign_url = None #explict
     
     def on_login_response(self, response):
         self.login_window.set_lock_all(False)
@@ -609,7 +610,6 @@ class Client:
         if response.error:
             self.login_window.set_current(login.LOGIN_USER)
             self.login_window.err_box.set_text(str(response.error))
-            #TODO: SHOW ERROR
             return
 
         if response.json_data:
@@ -642,7 +642,7 @@ class Client:
         
     def on_login(self, username, password):
         self.login_window.set_lock_all(True)
-        self.json_requester.request('POST', {'cmd': 'login', 'user':username, 'password': password},
+        self.json_requester.request('POST', {'cmd': 'login', 'mac': self.mac_id, 'username':username, 'password': password},
                                     self.on_login_response, None) #TODO: Implement Session
         
     
@@ -681,77 +681,17 @@ class Client:
 
     def app_quit(self):
         gtk.main_quit()
-    
-    def set_background_md5(self, hash_md5):
         
-        if self.background_md5 != hash_md5:
-            e = self.get_background()
-            
-            if e:
-                print e
-                return
-            
-            try:
-                assert ospath.getsize(BACKGROUND_CACHE) < 2500000L, "Large Background"
-                self.background_md5 = md5_cripto(open(BACKGROUND_CACHE).read())
-            except Exception, error:
-                print error
-                self.background_md5 = None
-                return
-        
-        if ('use_background' in self.informations 
-                    and self.informations['use_background']):
-                self.login_window.set_background(BACKGROUND_CACHE)
-        else:
-            self.login_window.set_background(None)
-        
-    def set_logo_md5(self, hash_md5):
-        if self.logo_md5 != hash_md5:
-            e = self.get_logo()
-            
-            if e:
-                print e
-                return
-            
-            try:
-                assert ospath.getsize(LOGO_CACHE) < 2500000L, "Large Logo"
-                self.logo_md5 = md5_cripto(open(LOGO_CACHE).read())
-            except Exception, error:
-                print error
-                self.logo_md5 = None
-                return
-        
-        if ('use_logo' in self.informations 
-                    and self.informations['use_logo']):
-                self.login_window.set_logo(LOGO_CACHE)
-        else:
-            self.login_window.set_logo(None)
-        
-    def get_background(self):
-        data = {'server': self.server, 
-                'port': 4559,
-                'mac_id': self.mac_id}
-        
-        url = "http://%(server)s:%(port)d/get_background/%(hash_id)s" % data
-        
+    def get_background(self, url):
         downloader = HttpDownload()
-        e = downloader.run(url,
-                           directory=CACHE_PATH,
-                           fn="wallpaper")
-        
+        e = downloader.run(url, directory=CACHE_PATH, fn="wallpaper")
         return e
     
-    def get_logo(self):
-        data = {'server': self.server, 
-                'port': 4559,
-                'mac_id': self.mac_id}
-        
-        url = "http://%(server)s:%(port)d/get_logo/%(hash_id)s" % data
-        
+    def get_logo(self, url):
         downloader = HttpDownload()
-        e = downloader.run(url,
-                           directory=CACHE_PATH,
-                           fn="logo")
-        
+        e = downloader.run(url, directory=CACHE_PATH, fn="logo")
         return e
+
+        
+
         

@@ -23,6 +23,7 @@ import thread
 import threading
 import httplib
 import urllib
+import traceback
 from time import sleep
 import json
 from TeleCentros.globals import DEFAULT_PATH
@@ -92,15 +93,21 @@ class JSONRequester:
 
         for response in self.responses:
             if response.on_done:
-                response.on_done(response, *response.args, **response.kwargs)
+                try:
+                    response.on_done(response, *response.args, **response.kwargs)
+                except:
+                    traceback.print_exc(file=sys.stdout)
             
             self.responses.remove(response)
 
         for response in self.fail_requests:
-            if response.on_fail:
-                response.on_fail(response, *response.args, **response.kwargs)
-            elif response.on_done:
-                response.on_done(response, *response.args, **response.kwargs)
+            try:
+                if response.on_fail:
+                    response.on_fail(response, *response.args, **response.kwargs)
+                elif response.on_done:
+                    response.on_done(response, *response.args, **response.kwargs)
+            except:
+                    traceback.print_exc(file=sys.stdout)
             
             self.fail_requests.remove(response)
 

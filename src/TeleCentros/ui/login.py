@@ -75,6 +75,7 @@ class Login:
         self.warn_msg = xml.get_object('warn_msg')
         self.imagealign = xml.get_object('imagealign')
         self.wm_title = xml.get_object('wm_title')
+        self.register_bnt = xml.get_object('register')
         self.xml = xml
         self.err_box = self.xml.get_object("err_box")
         
@@ -167,9 +168,12 @@ class Login:
         self.label.set_use_underline(True)
         self.entry.grab_focus()
     
-    def set_title(self, title):
+    def set_welcome_msg(self, title):
         self.title.set_markup("<big><big><big>%s</big></big></big>" % title)
-        
+    
+    def set_title(self, title):
+        self.wm_title.set_text(title)
+
     def unlock(self, obj):
         self.background.hide()
     
@@ -278,7 +282,7 @@ class Login:
             self.run_interable = True
             self.timeout_connect = 15
             self.iterable()
-            self.wm_title.set_text(_("OpenLanhouse Client - Disconnected"))
+            
         else:
             if self.iterable_timeout_id:
                 source_remove(self.iterable_timeout_id)
@@ -286,41 +290,10 @@ class Login:
             
             self.warn_msg.set_text('')
             self.wm_title.set_text(_("OpenLanhouse Client - Connected"))
-    """
-
-    def set_login_suport(self, status):
-        self.login_suport = status
-        
-        if not(status) and not(self.ticket_suport):
-            self.set_lock_all(True)
-            self.ticket_radio_item.set_sensitive(False)
-            return
-        else:
-            self.set_lock_all(False)
-
-        if not(status) and self.ticket_suport:
-            self.set_lock_all(False)
-            #self.login_radio_item.set_active(status)
-            self.ticket_radio_item.set_active(True)
-            self.ticket_radio_item.set_sensitive(False)
-
-        elif status and not(self.ticket_suport):
-            self.set_lock_all(False)
-            #self.login_radio_item.set_active(status)
-            self.ticket_radio_item.set_active(False)
-            self.ticket_radio_item.set_sensitive(False)
-        else:
-            self.ticket_radio_item.set_sensitive(True)
-        #else:
-        #    self.set_lock_all(False)
-        #    self.login_radio_item.set_active(status)
-    
-    #def on_login_radio_item_toggled(self, obj):
-    #    if not obj.get_active():
-    #        return
-        
-    #    self.set_current(LOGIN_USER)
-        
+    """      
 
     def set_warn_message(self, message):
         self.warn_msg.set_text(message)
+
+    def register_clicked_cb(self, obj, *args):
+        print 'register', self.main.sign_url

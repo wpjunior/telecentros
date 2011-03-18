@@ -1,10 +1,11 @@
 * A comunicação entre o telecentro os e o proxy server é totalmente feita pelo protocolo http e os dados são retornados pelo formato json
-* Todo pedido será realizado atraves da url http://servidor/proxy/ tendo os methods POST e GET
+* Todo pedido será realizado atraves da url http://servidor:porta/proxy/ tendo os methods POST e GET
 
 * LOGIN *
 ** ENVIO **
 {
 'cmd' = 'login', /* FIXO: Especificando que irá realizar um login */
+'mac': '21:23:41:etc', // VARIAVEL: String; Endereço MAC que será utilizado para identicar a maquina
 'username' = 'usuario@etc.etc', /* VARIAVEL: Email para realizar login */
 'password' = 'senhaetc124', /* VARIAVEL: Senha para realizar o login */
 }
@@ -19,4 +20,26 @@
         'host': '198.56.65.158', // host para o acesso ao proxy
         'port': 3128, // porta para o acesso ao proxy
     },
+
+#IMPLEMENTAR: TEMPO, USER NAME
+}
+
+
+* IDENTIFICAÇÂO DE MAQUINA *
+** ENVIO **
+{
+    'cmd' = 'identify', /* FIXO: Especificando que irá realizar uma identificação */
+    'mac': '21:23:41:etc', // VARIAVEL: String; Endereço MAC que será utilizado para identicar a maquina
+    'os_name': 'Ubuntu', // Variavel: String; Tipo do Sistema Operacional da Máquina, se disponivel é enviado
+    'os_version': '10.10', // Variavel: String; Tipo do Sistema Operacional da Máquina, se disponivel é enviado
+}
+
+** RESPOSTA **
+{
+    'name': 'Máquina 02 em Telecentro 3', // VARIAVEL: String; Identificação para o usuário reconhecer a maquina
+    'background-url': 'http://imagens.fotoseimagens.etc.br/casal-linux_3193_1024x768.jpg'. //VARIAVEL: String\Nulo; Background da tela de Login
+    'logo-url': 'http://imagens.fotoseimagens.etc.br/casal-linux_3193_1024x768.jpg'. //VARIAVEL: String\Nulo; Logo da tela de Login
+    'sign-support': true, //Variavel: Booleano; se true terá suporte a cadastrar os usuários
+    'sign-url': 'http://www.google.com.br/sign', //Variavel: String\Nulo; URL para informar qual site deverá acessar para cadastrar um usuário, nulo se 'sign-support' for false
+    'welcome-msg': 'Bem Vindo', //Variavel: String\Nulo; variavel para informar a tela de boas vindas com o nome, nota: se null:Mantem 'Bem vindo'
 }
