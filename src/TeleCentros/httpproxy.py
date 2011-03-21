@@ -38,7 +38,7 @@ class ProxySetter:
 
 
         gconf_client.set_string("/system/proxy/secure_host", self.host)
-        gconf_client.set_string("/system/proxy/secure_port", self.port)
+        gconf_client.set_int("/system/proxy/secure_port", self.port)
 
         gconf_client.set_bool(SYSTEM_HTTP + 'use_authentication', True)
         gconf_client.set_bool(SYSTEM_HTTP + 'use_http_proxy', True)

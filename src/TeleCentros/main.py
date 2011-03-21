@@ -35,7 +35,7 @@ from TeleCentros.script_actions import ScriptManager
 from TeleCentros.utils import HttpDownload
 from TeleCentros.get_macaddr import get_route_mac_address
 from TeleCentros.jsonrequester import JSONRequester
-
+from TeleCentros.httpproxy import ProxySetter
 # Check DBus
 try:
     from TeleCentros.dbus_manager import DbusManager
@@ -89,7 +89,7 @@ class Client:
         self.conf_client = get_default_client()
         self.dbus_manager = DbusManager(self)
         self.script_manager = ScriptManager()
-        
+        self.proxy_setter = ProxySetter()
         # Get operating system version
         o = get_os()
         if o[0]:
@@ -338,11 +338,11 @@ class Client:
             self.time_str.set_text(time_str)
         else:
             self.time_str.set_text(_("Unlimited"))
-        """
+        
         if self.cleanup_apps_id > 0:
             gobject.source_remove(self.cleanup_apps_id)
             self.cleanup_apps_id = 0
-
+        """
         if 'limited' in data and 'registred' in data:
             self.limited = data['limited']
             self.registred = data['registred']
@@ -470,6 +470,11 @@ class Client:
             if obj.has_key('full_name') and obj['full_name']:
                 self.full_name.set_text(obj['full_name'])
                 self.dbus_manager.full_name_changed(obj['full_name'])
+
+            if obj.has_key('http_proxy') and obj['http_proxy']:
+                self.set_proxy(obj['http_proxy'])
+            else:
+                self.proxy_setter.unset()
 
     def update_time_status(self):
         now = int(time.time())
@@ -706,6 +711,11 @@ class Client:
             if obj.has_key('full_name') and obj['full_name']:
                 self.full_name.set_text(obj['full_name'])
                 self.dbus_manager.full_name_changed(obj['full_name'])
+
+            if obj.has_key('http_proxy') and obj['http_proxy']:
+                self.set_proxy(obj['http_proxy'])
+            else:
+                self.proxy_setter.unset()
         
         if self.login_attempts >= 3:
             self.login_window.set_lock_all(True)
@@ -718,6 +728,21 @@ class Client:
             self.login_window.on_ready_iterable()
 
         self.login_window.set_current(login.LOGIN_USER)
+
+    def set_proxy(self, obj):
+        if obj.has_key('username'):
+            self.proxy_setter.username = obj['username']
+
+        if obj.has_key('password'):
+            self.proxy_setter.password = obj['password']
+
+        if obj.has_key('host'):
+            self.proxy_setter.host = obj['host']
+
+        if obj.has_key('port'):
+            self.proxy_setter.port = int(obj['port'])
+
+        self.proxy_setter.set()
         
     def on_login(self, username, password):
         self.login_window.set_lock_all(True)
