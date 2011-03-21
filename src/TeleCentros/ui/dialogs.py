@@ -164,21 +164,23 @@ class delete:
         self.state = state
         self.dlg.destroy()
         
-class ok_only:
+class ok_only(gtk.MessageDialog):
     def __init__(self, text, Parent=None, title=None, ICON=gtk.MESSAGE_INFO):
         """
             Dialog contain only ok button
         """
         
-        dlg = gtk.MessageDialog(Parent, gtk.DIALOG_MODAL, ICON,
-                                                        gtk.BUTTONS_OK, text)
+        gtk.MessageDialog.__init__(self, Parent, gtk.DIALOG_MODAL, ICON,
+                          gtk.BUTTONS_OK, text)
         
         if title:
-            dlg.set_title(title)
+            self.set_title(title)
             
-        dlg.set_markup(text)
-        dlg.run()
-        dlg.destroy()
+        self.set_markup(text)
+        self.connect("response", self.on_response)
+
+    def on_response(self, obj, *args):
+        self.destroy()
 
 class FileChooserDialog(gtk.FileChooserDialog):
     """

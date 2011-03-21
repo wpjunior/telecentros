@@ -44,3 +44,41 @@
     'sign-url': 'http://www.google.com.br/sign', //Variavel: String\Nulo; URL para informar qual site deverá acessar para cadastrar um usuário, nulo se não houver suporte a cadastramento
     'welcome-msg': 'Bem Vindo', //Variavel: String\Nulo; variavel para informar a tela de boas vindas com o nome, nota: se null:Mantem 'Bem vindo'
 }
+
+
+** Verificar mais tempo **
+** ENVIO **
+{
+	'cmd' = 'check_time',
+	'mac': '21:23:41:etc', // VARIAVEL: String; Endereço MAC que será utilizado para identicar a maquina
+}
+
+** RESPOSTA **
+{
+	'logout' = true, // Se true a tela devera se bloqueada se false não sera e deverá especificar tudo abaixo
+	'clean_apps' = true, // Se true fechara os aplicativos especificados
+	'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
+	'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
+	'http_proxy': { /* Array com os dados para setar o proxy */
+        	      'username': 'usuario1243', // usuario para autenticação do proxy
+		      'password': 'usuario1243', // senha para a autenticação do proxy
+		      'host': '198.56.65.158', // host para o acesso ao proxy
+		      'port': 3128, // porta para o acesso ao proxy
+   		       },
+		       #TODO: implement actions after
+}
+
+
+** LOGOUT **
+** ENVIO **
+{
+	'cmd': 'logout',
+	'mac': '21:23:41:etc', // VARIAVEL: String; Endereço MAC que será utilizado para identicar a maquina
+}
+
+** RESPOSTA **
+{
+	'error': 'blah blah', // VARIAVEL: String\NUll, String para esclarecer por que o logout nao foi authorizado, se null o logout foi authorizado
+	'clean_apps' = true, // Se true fechara os aplicativos especificados
+	#TODO: implement actions after
+}

@@ -144,10 +144,7 @@ class Client:
         #Login Window
         self.login_window = login.Login(self)
         self.login_window.run()
-        
-        #if not self.netclient.start():
-        #    self.login_window.set_connected(False)
-    
+            
     def on_window_delete_event(self, *args):
         self.on_show_hide(None)
         return True
@@ -427,6 +424,53 @@ class Client:
             print method, params
             return True
 
+    def check_more_time(self):
+        self.json_requester.request('POST', {'cmd': 'check_time', 'mac': self.mac_id},
+                                    self.on_check_time_response, None)
+
+    def on_check_time_response(self, response):
+
+        if response.error:
+            self.block(0, 0)
+            return
+
+        if response.json_data:
+            obj = response.json_data
+
+            if not obj:
+                self.block(0, 0)
+                return
+
+        if response.json_data:
+            obj = response.json_data
+            if not obj:
+                self.block(0, 0)
+                return
+        
+            logout = True
+            if obj.has_key('logout'):
+                logout = bool(obj['logout'])
+            
+            clean_apps = True
+            if obj.has_key('clean_apps'):
+                clean_apps = bool(obj['clean_apps'])
+
+            if logout:
+                self.block(0, 0, cleanup_apps=clean_apps) #TODO: implement shutdown
+                return
+
+            if obj.has_key('time') and obj['time']:
+                rtime = int(obj['time'])
+            else:
+                rtime = None
+
+            self.start_time = time.time()
+            self.unblock(rtime)
+
+            if obj.has_key('full_name') and obj['full_name']:
+                self.full_name.set_text(obj['full_name'])
+                self.dbus_manager.full_name_changed(obj['full_name'])
+
     def update_time_status(self):
         now = int(time.time())
   
@@ -436,11 +480,16 @@ class Client:
         
         if self.time:
             mleft_time = self.time - melapsed_time
-            
+
+            if mleft_time <= 0:
+                self.check_more_time()
+                return
+
             self.dbus_manager.left_time_changed(mleft_time)
             time_left_str = "%0.2d:%0.2d:%0.2d" % humanize_time(mleft_time)
             time_left_per = float(mleft_time) / float(self.time)
             time_elapsed_per = float(melapsed_time) / float(self.time)
+
         else:
             time_left_str = _("None")
             time_left_per = 0
@@ -594,6 +643,34 @@ class Client:
             else:
                 self.login_window.set_logo(None)
 
+    def on_logout_response(self, response):
+        print 'on_logout', response
+        if response.error:
+            dlg = dialogs.ok_only(text=str(response.error), ICON=gtk.MESSAGE_ERROR)
+            dlg.show()
+            return
+
+        if response.json_data:
+            obj = response.json_data
+
+            if not obj:
+                return
+
+            error = None
+            if obj.has_key('error'):
+                error = obj['error']
+
+            if error:
+                dlg = dialogs.ok_only(text=error, ICON=gtk.MESSAGE_ERROR)
+                dlg.show()
+                return
+
+            clean_apps = True
+            if obj.has_key('clean_apps'):
+                clean_apps = bool(obj['clean_apps'])
+
+            self.block(0, 0, cleanup_apps=clean_apps)
+
     def on_login_response(self, response):
         self.login_window.set_lock_all(False)
 
@@ -659,9 +736,9 @@ class Client:
         response = dlg.run()
         dlg.destroy()
         
-        #if response == gtk.RESPONSE_YES:
-        #    self.netclient.request('logout')
-            
+        if response == gtk.RESPONSE_YES:
+            self.json_requester.request('POST', {'cmd': 'logout', 'mac': self.mac_id},
+                                        self.on_logout_response, None)
 
     def system_shutdown(self):
         if not ActionManager:

@@ -8,7 +8,10 @@ TODO:
 * Script para setar o proxy - medio
 * Logo do programa - muito baixa
 * Mudar tela de about - baixa
-* Medidor de Tempo - Média
+* Medidor de Tempo - tests
 * Tradução via - gettext - média
-* Bloqueio Tela por tempo terminar- alta
-* Perguntar se há mais tempo no servidor - alta
+* Bloqueio Tela por tempo terminar- tests
+* Perguntar se há mais tempo no servidor - tests
+* Enviar lista de aplicações para finalizarem no final da sessão - média
+* Shutdown e reboot no check_time - média
+* Alertar quando o tempo estiver acabando = media
