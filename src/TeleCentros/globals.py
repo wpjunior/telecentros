@@ -68,7 +68,7 @@ CLIENT_TLS_TEMPLATE = ospath.join(CERTS_PATH, 'telecentros.template')
 CLIENT_ICON_NAME = 'telecentros'
 
 ##APP
-APP_NAME = 'Telecentros'
+APP_NAME = 'Cliente Telecentros'
 APP_SITE = 'http://www.lethus.com.br'
 APP_COPYRIGHT = 'Telecentros - Tethus TI'
 
@@ -87,7 +87,7 @@ language = language[:end]
 ##End internacionalize
 
 ##APP Proprerties
-APP_COMMENTS = _('a Free LAN House Client')
+APP_COMMENTS = None
 CLIENT_APP_NAME = _('OpenLanHouse - Client')
 
 MIN_NICK = 4
@@ -105,24 +105,17 @@ MAX_CHUNK_SIZE = 10485760
 COLOR_YELLOW = '#FCE94F'
 COLOR_RED = '#EF2929'
 
-APP_DOCS = ""
+APP_DOCS = ('Wilson Pinto Júnior <wpjunior@lethus.com.br>',)
 
-APP_AUTHORS = ('Wilson Pinto Júnior <wilson@openlanhouse.org>',)
-APP_ARTISTS = ('Wilson Pinto Júnior <wilson@openlanhouse.org>',)
+APP_AUTHORS = ('Wilson Pinto Júnior <wpjunior@lethus.com.br>',)
+APP_ARTISTS = ""
 
 
-APP_CONTRIB = ('Bruno Gonçalves <bigbruno@gmail.com>',
-               'Gabriel Falcão <gabriel@guake-terminal.org>',
-               'Lincoln de Sousa <lincoln@guake-terminal.org>',
-               'Gustavo Noronha Silva <gns@gnome.org>',
-               'Og Maciel <ogmaciel@gnome.org>'
-               )
+APP_CONTRIB = ()
 
-APP_TRANSLATORS = {'pt_BR': ("Wilson Pinto Júnior <wilson@openlanhouse.org>\n"
-                             "Vladimir Melo <vladimirmelo.psi@gmail.com>"),
-                   'es_ES': "Pier Jose Gotta Perez <piegope@fslcol.org>"}
+APP_TRANSLATORS = ""
 
-APP_LICENCE = _('OpenLanhouse is free software: you can redistribute it and/or modify\n'
+APP_LICENCE = _('TeleCentros Client is free software: you can redistribute it and/or modify\n'
                 'it under the terms of the GNU General Public License as published by\n'
                 'the Free Software Foundation, either version 3 of the License, or\n'
                 '(at your option) any later version.\n\n'

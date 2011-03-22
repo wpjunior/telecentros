@@ -21,7 +21,7 @@ import time
 import logging
 import gtk
 import gobject
-
+import subprocess
 from TeleCentros.ConfigClient import get_default_client
 
 from TeleCentros.ui import icons
@@ -36,6 +36,12 @@ from TeleCentros.utils import HttpDownload
 from TeleCentros.get_macaddr import get_route_mac_address
 from TeleCentros.jsonrequester import JSONRequester
 from TeleCentros.httpproxy import ProxySetter
+
+try:
+    import pynotify
+except:
+    pynotify = None
+
 # Check DBus
 try:
     from TeleCentros.dbus_manager import DbusManager
@@ -60,16 +66,9 @@ from os import path as ospath
 _ = gettext.gettext
 
 class Client:
-    
-    name = None
-    description = None
     locked = False
     informations = {}
-    other_info = {}
-    logo_md5 = None
-    background_md5 = None
     visible = False
-    monitory_handler_id = 0
     update_time_handler_id = 0
     cleanup_apps_id = 0
     cleanup_apps_timeout = 30
@@ -82,6 +81,8 @@ class Client:
     os_name = ""
     os_version = ""
     sign_url = None
+    cleanup_apps = []
+    notification = None
     
     def __init__(self):
         
@@ -90,6 +91,10 @@ class Client:
         self.dbus_manager = DbusManager(self)
         self.script_manager = ScriptManager()
         self.proxy_setter = ProxySetter()
+
+        if pynotify and not pynotify.is_initted():
+            pynotify.init('telecentros')
+
         # Get operating system version
         o = get_os()
         if o[0]:
@@ -127,10 +132,6 @@ class Client:
         self.main_window.show()
         self.visible = True
         self.show_window_menu.set_active(True)
-
-        self.show_informations(True)
-        self.show_time_elapsed(True)
-        self.show_time_remaining(True)
         
         self.xml.connect_signals(self)
         
@@ -175,64 +176,6 @@ class Client:
     
     def on_about_menuitem_activate(self, obj):
         dialogs.about(self.logo, self.main_window)
-    
-    def set_myinfo(self, data):
-        if data.has_key('name'):
-            self.name = data['name']
-            self.dbus_manager.host_name_changed(self.name)
-            
-            if 'welcome_msg' in self.informations:
-                self.login_window.set_title(
-                    self.informations['welcome_msg'].replace("%n", self.name)
-                    )
-            
-            self.logger.debug('My host name is "%s"' % data['name'])
-            
-        
-        if data.has_key('description'):
-            self.description = data['description']
-            self.dbus_manager.description_changed(self.description)
-            self.logger.debug('My host description is "%s"' % data['description'])
-    
-    def set_information(self, data):
-        assert isinstance(data, dict)
-        
-        for key in data:
-            self.informations[key] = data[key]
-        
-        if 'welcome_msg' in data:
-            self.login_window.set_title(
-                    self.informations['welcome_msg'].replace("%n", self.name)
-                    )
-            self.dbus_manager.welcome_msg_changed(self.informations['welcome_msg'])
-        
-        if 'default_welcome_msg' in data:
-            if data['default_welcome_msg']:
-                self.login_window.set_title(_('Welcome'))
-                self.dbus_manager.welcome_msg_changed(_('Welcome'))
-            else:
-                self.login_window.set_title(
-                       self.informations['welcome_msg'].replace("%n", self.name)
-                       )
-                self.dbus_manager.welcome_msg_changed(self.informations['welcome_msg'])
-        
-        if 'currency' in data:
-            self.currency = data['currency']
-            self.dbus_manager.currency_changed(self.currency)
-        
-        if 'use_background' in data:
-            if data['use_background']:
-                self.login_window.set_background(BACKGROUND_CACHE)
-            else:
-                self.login_window.set_background(None)
-        
-        if 'use_logo' in data:
-            if data['use_logo']:
-                self.login_window.set_logo(LOGO_CACHE)
-            else:
-                self.login_window.set_logo(None)
-
-        print self.informations
         
     def reset_widgets(self):
         self.full_name.set_text("")
@@ -240,37 +183,22 @@ class Client:
         self.elapsed_pb.set_fraction(0.0)
         self.remaining_pb.set_text("")
         self.remaining_pb.set_fraction(0.0)
-        self.other_info = {}
     
     def do_cleanup_timeout(self):
         self.cleanup_apps_timeout -= 1
-
-        if 'finish_action' in self.informations:
-            action = self.informations['finish_action']
-        else:
-            action = 0
 
         if self.cleanup_apps_timeout == 0:
             if self.login_window.iterable_timeout_id == 0: #check
                 self.login_window.set_warn_message("")
 
-            if ((action == 1) and ('close_apps_list' in self.informations)):
-                for a in self.informations['close_apps_list']:
+                for a in self.cleanup_apps:
                     kill_process(a) # Kill process
-            
-            if ((action == 2) and (ActionManager)):
-                ActionManager.logout()
 
             self.cleanup_apps_id = 0
             return
         
         if self.login_window.iterable_timeout_id == 0: #check
-            if (action == 1):
-                msg = (_("Closing applications in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
-            elif (action == 2):
-                msg = (_("Closing desktop session in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
-            else:
-                msg = None
+            msg = (_("Closing applications in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
 
             if msg:
                 self.login_window.set_warn_message(msg)
@@ -278,7 +206,7 @@ class Client:
         self.cleanup_apps_id = gobject.timeout_add_seconds(1,
                                                            self.do_cleanup_timeout)
 
-    def block(self, after, action, cleanup_apps=True):
+    def block(self, after_action=0, cleanup_apps=[]):
 
         self.script_manager.pre_block()
 
@@ -295,27 +223,27 @@ class Client:
         self.stop_monitory_status()
         self.dbus_manager.block()
         
-        if 'finish_action' in self.informations and 'finish_action_time' in self.informations:
-            if self.informations['finish_action'] and cleanup_apps:
-                self.cleanup_apps_timeout = self.informations['finish_action_time']
-                self.do_cleanup_timeout()
+        if cleanup_apps:
+            self.cleanup_apps = cleanup_apps
+            self.cleanup_apps_timeout = 30
+            self.do_cleanup_timeout()
         
         self.script_manager.pos_block()
 
         if not ActionManager:
             return
 
-        if not after:
-            return
-
-        if action == 0 : #shutdown
+        if after_action == 1 : #shutdown
             ActionManager.shutdown()
             
-        elif action == 1: #reboot
+        elif after_action == 2: #reboot
             ActionManager.reboot()
             
-        elif action == 2: #logout
+        elif after_action == 3: #logout
             ActionManager.logout()
+
+        elif after_action == 4: #quit application
+            gtk.main_quit()
     
     def unblock(self, time):
         # Execute a pre unblock script
@@ -329,9 +257,6 @@ class Client:
         
         self.show_window_menu.set_active(True)
         self.main_window.show()
-        self.show_informations(True)
-        self.show_time_elapsed(True)
-        self.show_time_remaining(True)
 
         if self.time:
             time_str = "%0.2d:%0.2d:%0.2d" % humanize_time(self.time)
@@ -342,88 +267,13 @@ class Client:
         if self.cleanup_apps_id > 0:
             gobject.source_remove(self.cleanup_apps_id)
             self.cleanup_apps_id = 0
-        """
-        if 'limited' in data and 'registred' in data:
-            self.limited = data['limited']
-            self.registred = data['registred']
-            
-            self.dbus_manager.unblock((int(data['registred']), 
-                                       int(data['limited'])))
-        
-        if 'time' in data:
-            self.time = data['time']
-            self.dbus_manager.time_changed(data['time'])
-        
-        if 'registred' in data:
-            if data['registred']:
-                self.xml.get_object("information_vbox").show()
-                self.xml.get_object("information_menuitem").set_sensitive(True)
-            else:
-                self.xml.get_object("information_vbox").hide()
-                self.xml.get_object("information_menuitem").set_sensitive(False)
-        
-        if 'limited' in data:
-            self.xml.get_object("remaining_label").set_property('visible', bool(data['limited']))
-            self.xml.get_object("remaining_pb").set_property('visible', bool(data['limited']))
-            self.xml.get_object("time_remaining_menuitem").set_property('sensitive', bool(data['limited']))
-        """
+
         self.start_monitory_status()
         self.login_window.unlock(None)
 
         # execute a pos unblock script
         self.script_manager.pos_unblock()
     
-    def dispatch(self, method, params):
-        
-        if method == 'core.get_hash_id':
-            return self.hash_id
-            
-        elif method == 'main.set_myinfo':
-            self.set_myinfo(*params)
-            return True
-        
-        elif method == 'core.set_information':
-            self.set_information(*params)
-            return True
-        
-        elif method == 'core.unblock':
-            self.unblock(*params)
-            return True
-        
-        elif method == 'core.block':
-            self.block(*params)
-            return True
-        
-        elif method == 'set_status':
-            self.set_status(*params)
-            return True
-        
-        elif method == 'system.shutdown':
-            self.system_shutdown()
-            return True
-            
-        elif method == 'system.reboot':
-            self.system_reboot()
-            return True
-        
-        elif method == 'system.logout':
-            self.system_logout()
-            return True
-        
-        elif method == 'app.quit':
-            self.app_quit()
-            return True
-        
-        elif method == 'main.set_background_md5':
-            self.set_background_md5(*params)
-        
-        elif method == 'main.set_logo_md5':
-            self.set_logo_md5(*params)
-        
-        else:
-            print method, params
-            return True
-
     def check_more_time(self):
         self.json_requester.request('POST', {'cmd': 'check_time', 'mac': self.mac_id},
                                     self.on_check_time_response, None)
@@ -431,32 +281,36 @@ class Client:
     def on_check_time_response(self, response):
 
         if response.error:
-            self.block(0, 0)
+            self.block()
             return
 
         if response.json_data:
             obj = response.json_data
 
             if not obj:
-                self.block(0, 0)
+                self.block()
                 return
 
         if response.json_data:
             obj = response.json_data
             if not obj:
-                self.block(0, 0)
+                self.block()
                 return
         
             logout = True
             if obj.has_key('logout'):
                 logout = bool(obj['logout'])
             
-            clean_apps = True
+            clean_apps = []
             if obj.has_key('clean_apps'):
-                clean_apps = bool(obj['clean_apps'])
+                clean_apps = obj['clean_apps']
+
+            after_action = 0
+            if obj.has_key('after_action'):
+                after_action = int(obj['after_action'])
 
             if logout:
-                self.block(0, 0, cleanup_apps=clean_apps) #TODO: implement shutdown
+                self.block(after_action, cleanup_apps=clean_apps)
                 return
 
             if obj.has_key('time') and obj['time']:
@@ -490,10 +344,30 @@ class Client:
                 self.check_more_time()
                 return
 
+            
+
             self.dbus_manager.left_time_changed(mleft_time)
             time_left_str = "%0.2d:%0.2d:%0.2d" % humanize_time(mleft_time)
             time_left_per = float(mleft_time) / float(self.time)
             time_elapsed_per = float(melapsed_time) / float(self.time)
+            if time_left_per <= 0.1 and pynotify: #TODO: Change
+                if not self.notification:
+                    self.notification = pynotify.Notification(_("Time is running out"),
+                                                              _("With just %s\n"
+                                                                "Save your work session that soon will be finalized") % time_left_str,
+                                                              "dialog-warning")
+                    self.notification.set_urgency(pynotify.URGENCY_CRITICAL)
+                    self.notification.set_timeout(1000)
+                    self.notification.attach_to_status_icon(self.tray_icon)
+                    self.notification.show()
+                else:
+                    self.notification.update(_("Time is running out"),
+                                             _("With just %s\n"
+                                               "Save your work session that soon will be finalized") % time_left_str,
+                                             "dialog-warning")
+                    self.notification.set_urgency(pynotify.URGENCY_CRITICAL)
+                    self.notification.set_timeout(1000)
+                    self.notification.show()
 
         else:
             time_left_str = _("None")
@@ -508,99 +382,14 @@ class Client:
         
         self.update_time_handler_id = gobject.timeout_add(1000,
                                         self.update_time_status)
-    
-    def monitory_status(self):
-        print "TODO: GET STATUS ??"
-        #request = self.netclient.request('get_status')
-        #request.connect("done", self.on_get_status_request_done)
-        self.monitory_handler_id = gobject.timeout_add(120000,
-                                        self.monitory_status)
         
     def start_monitory_status(self):
         self.update_time_status()
-        self.monitory_status()
     
     def stop_monitory_status(self):
-        if self.monitory_handler_id:
-            gobject.source_remove(self.monitory_handler_id)
         if self.update_time_handler_id:
             gobject.source_remove(self.update_time_handler_id)
-    """
-    def set_status(self, data):
-        for key in data:
-            self.other_info[key] = data[key]
-        
-        if 'time' in data and 'left_time' in data and 'elapsed' in data:
-            self.update_time = int(time.time())
-        
-        if 'time' in data:
-            assert len(data['time']) == 2
-            assert self.limited
-            self.time = data['time']
-            self.mtime = ((self.time[0] * 3600) + self.time[1] * 60)
-            time_str = "%0.2d:%0.2d" % tuple(self.time)
-            self.time_str.set_text(time_str)
-            self.dbus_manager.time_changed(self.time)
-        
-        if 'left_time' in data:
-            assert self.limited
-            self.left_time = data['left_time']
-        
-        if 'elapsed' in data:
-            self.elapsed_time = data['elapsed']
-        
-    def on_get_status_request_done(self, request, value):
-        self.update_time = int(time.time())
-        self.limited = value['limited']
-        self.elapsed_time = value['elapsed']
-        
-        if self.limited:
-            self.left_time = value['left_time']
-            self.time = value['time']
-            self.mtime = ((self.time[0] * 3600) + self.time[1] * 60)
-            
-            assert len(value['time']) == 2
-            time_str = "%0.2d:%0.2d" % tuple(self.time)
-        else:
-            self.left_time = None
-            self.time = None
-            self.mtime = None
-            time_str = _("Unlimited")
-        
-        self.time_str.set_text(time_str)
-    """
-    def show_informations(self, status):
-        self.interative = False
-        self.xml.get_object("information_vbox").set_property('visible', status)
-        self.xml.get_object("information_menuitem").set_active(status)
-        self.interative = True
     
-    def show_time_elapsed(self, status):
-        self.interative = False
-        self.xml.get_object("elapsed_label").set_property('visible', status)
-        self.xml.get_object("elapsed_pb").set_property('visible', status)
-        self.xml.get_object("time_elapsed_menuitem").set_active(status)
-        self.interative = True
-    
-    def show_time_remaining(self, status):
-        self.interative = False
-        self.xml.get_object("remaining_label").set_property('visible', status)
-        self.xml.get_object("remaining_pb").set_property('visible', status)
-        self.xml.get_object("time_remaining_menuitem").set_active(status)
-        self.interative = True
-    
-    def on_information_toggled(self, obj):
-        if self.interative:
-            self.show_informations(obj.get_active())
-        
-    def on_time_elapsed_toggled(self, obj):
-        if self.interative:
-            self.show_time_elapsed(obj.get_active())
-    
-    def on_time_remaining_toggled(self, obj):
-        if self.interative:
-            self.show_time_remaining(obj.get_active())
-
     def on_identify_response(self, response):
         self.login_window.set_lock_all(False)
 
@@ -649,7 +438,7 @@ class Client:
                 self.login_window.set_logo(None)
 
     def on_logout_response(self, response):
-        print 'on_logout', response
+
         if response.error:
             dlg = dialogs.ok_only(text=str(response.error), ICON=gtk.MESSAGE_ERROR)
             dlg.show()
@@ -670,11 +459,15 @@ class Client:
                 dlg.show()
                 return
 
-            clean_apps = True
+            clean_apps = []
             if obj.has_key('clean_apps'):
-                clean_apps = bool(obj['clean_apps'])
+                clean_apps = obj['clean_apps']
 
-            self.block(0, 0, cleanup_apps=clean_apps)
+            after_action = 0
+            if obj.has_key('after_action'):
+                after_action = int(obj['after_action'])
+
+            self.block(after_action, cleanup_apps=clean_apps)
 
     def on_login_response(self, response):
         self.login_window.set_lock_all(False)
@@ -703,10 +496,17 @@ class Client:
             else:
                 rtime = None
 
+            up_apps = None
+            if obj.has_key('up_apps') and obj['up_apps']:
+                up_apps = obj['up_apps']
+
             if auth:
                 self.start_time = time.time()
                 self.login_attempts = 0
                 self.unblock(rtime)
+
+                if up_apps:
+                    self.start_apps(up_apps)
 
             if obj.has_key('full_name') and obj['full_name']:
                 self.full_name.set_text(obj['full_name'])
@@ -765,27 +565,6 @@ class Client:
             self.json_requester.request('POST', {'cmd': 'logout', 'mac': self.mac_id},
                                         self.on_logout_response, None)
 
-    def system_shutdown(self):
-        if not ActionManager:
-            return
-        
-        ActionManager.shutdown()
-
-    def system_reboot(self):
-        if not ActionManager:
-            return
-        
-        ActionManager.reboot()
-
-    def system_logout(self):
-        if not ActionManager:
-            return
-        
-        ActionManager.logout()
-
-    def app_quit(self):
-        gtk.main_quit()
-        
     def get_background(self, url):
         downloader = HttpDownload()
         e = downloader.run(url, directory=CACHE_PATH, fn="wallpaper")
@@ -796,6 +575,14 @@ class Client:
         e = downloader.run(url, directory=CACHE_PATH, fn="logo")
         return e
 
-        
+    def start_apps(self, apps):
+        for app in apps:
+            if not isinstance(app, list):
+                app = [app]
 
-        
+            for i in range(len(app)): #hack set str
+                app[i] = str(app[i])
+                
+            po = subprocess.Popen(app, stdin=None, stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE)
+            print 'start', app, po

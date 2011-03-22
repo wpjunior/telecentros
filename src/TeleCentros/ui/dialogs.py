@@ -69,7 +69,7 @@ class about(gtk.AboutDialog):
         if Parent:
             self.set_transient_for(Parent)
         
-        self.set_name(_("TeleCentros"))
+        self.set_name(_("Client TeleCentros"))
         self.set_version(APP_VERSION)
         
         self.set_website(APP_SITE)
@@ -81,14 +81,6 @@ class about(gtk.AboutDialog):
         self.set_documenters(APP_DOCS)
         self.set_artists(APP_ARTISTS)
         self.set_license(APP_LICENCE)
-        
-        # TRANSLATORS
-        lang = os_getenv('LANG', 'en_US').split('.')[0]
-        if lang in APP_TRANSLATORS:
-            translator = APP_TRANSLATORS[lang]
-            self.set_translator_credits(translator)
-        else:
-            self.set_translator_credits(_("translator-credits"))
         
         self.run()
         self.destroy()

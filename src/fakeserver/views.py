@@ -8,13 +8,13 @@ def proxy(request):
     if cmd == 'login':
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
-        return JSONResponse({'authenticated': True, 'error': None, 'full_name': "Junao", 'time': 15, 'http_proxy': proxy})
+        return JSONResponse({'authenticated': True, 'error': None, 'full_name': "Junao", 'time': 360, 'up_apps': [['firefox', 'http://www.gmail.com'], ['xterm', '-c', 'python']]})#, 'http_proxy': proxy})
 
     elif cmd == 'identify':
         return JSONResponse({'name': 'Xuxu na Feira',})
 
     elif cmd == 'check_time':
-        return JSONResponse({'logout': False, 'clean_apps': False, 'error': None, 'full_name': "Junao", 'time': 150, 'http_proxy': proxy})
+        return JSONResponse({'logout': True, 'clean_apps': ['pidgin', 'rhythmbox'], 'error': None, 'full_name': "Junao", 'time': 150, 'after_action':0})#, 'http_proxy': proxy})
 
     elif cmd == 'logout':
-        return JSONResponse({'error': None})
+        return JSONResponse({'error': None, 'clean_apps': ['pidgin', 'rhythmbox']})

@@ -19,36 +19,6 @@
           </object>
         </child>
         <child>
-          <object class="GtkAction" id="menuitem2">
-            <property name="name">menuitem2</property>
-            <property name="label" translatable="yes">_View</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="information_menuitem">
-            <property name="active">True</property>
-            <property name="name">information_menuitem</property>
-            <property name="label" translatable="yes">_Information</property>
-            <signal handler="on_information_toggled" name="toggled"/>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="time_elapsed_menuitem">
-            <property name="active">True</property>
-            <property name="name">time_elapsed_menuitem</property>
-            <property name="label" translatable="yes">_Time Elapsed</property>
-            <signal handler="on_time_elapsed_toggled" name="toggled"/>
-          </object>
-        </child>
-        <child>
-          <object class="GtkToggleAction" id="time_remaining_menuitem">
-            <property name="active">True</property>
-            <property name="name">time_remaining_menuitem</property>
-            <property name="label" translatable="yes">_Time Remaining</property>
-            <signal handler="on_time_remaining_toggled" name="toggled"/>
-          </object>
-        </child>
-        <child>
           <object class="GtkAction" id="menuitem4">
             <property name="name">menuitem4</property>
             <property name="label" translatable="yes">_Help</property>
@@ -67,11 +37,6 @@
       <menubar name="menubar1">
         <menu action="menuitem1">
           <menuitem action="logout_menuitem"/>
-        </menu>
-        <menu action="menuitem2">
-          <menuitem action="information_menuitem"/>
-          <menuitem action="time_elapsed_menuitem"/>
-          <menuitem action="time_remaining_menuitem"/>
         </menu>
         <menu action="menuitem4">
           <menuitem action="about_menuitem"/>

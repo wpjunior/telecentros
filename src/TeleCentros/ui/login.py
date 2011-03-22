@@ -224,30 +224,7 @@ class Login:
             self.label.set_text("")
         else:
             self.set_current(self.current_widget)
-    """
-    def iterable(self):
-        if self.timeout_connect != 0:
-            if self.run_interable:
-                self.timeout_connect -= 1
-                self.warn_msg.set_text(_('The connection to the server was ' 
-                                         'lost, trying to connect in %0.2d '
-                                         'seconds.') % 
-                                         (self.timeout_connect + 1))
-                
-                self.iterable_timeout_id = timeout_add(1000, self.iterable)
-                return
-            else:
-                self.warn_msg.set_text("")
-                self.timeout_connect = 15
-        else:
-            self.run_interable = False
-            self.main.reload_network()
-            
-            if not self.main.netclient.start():
-                self.run_interable = True
-                self.timeout_connect = 15
-                self.iterable_timeout_id = timeout_add(1000, self.iterable)
-    """
+
     def on_ready_iterable(self):
         if self.on_ready != 0:
             if self.on_ready_run_interable:
@@ -267,31 +244,7 @@ class Login:
             self.set_lock_all(False)
             self.on_ready_run_interable = False
             self.warn_msg.set_text("")
-            self.main.login_attempts = 0
-    """    
-    def set_connected(self, status):
-        self.set_lock_all(not(status))
-        
-        if not(status) and not self.background.visible:
-            self.lock()
-        
-        if not status:
-            if self.iterable_timeout_id:
-                source_remove(self.iterable_timeout_id)
-                self.iterable_timeout_id = 0
-            
-            self.run_interable = True
-            self.timeout_connect = 15
-            self.iterable()
-            
-        else:
-            if self.iterable_timeout_id:
-                source_remove(self.iterable_timeout_id)
-                self.iterable_timeout_id = 0
-            
-            self.warn_msg.set_text('')
-            self.wm_title.set_text(_("OpenLanhouse Client - Connected"))
-    """      
+            self.main.login_attempts = 0   
 
     def set_warn_message(self, message):
         self.warn_msg.set_text(message)
@@ -314,5 +267,3 @@ class Login:
         webview = webkitscrolled.get_children()[0]
         webkitscrolled.remove(webview)
         webview.destroy()
-    
-        print 'back', webview

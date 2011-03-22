@@ -16,6 +16,7 @@
 'error': null, /* VARIAVEL: Null/String; Caso aconteça algum erro */
 'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
 'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
+'up_apps': ['firefox',['xterm', '-c']] //Lista/Null de Aplicações que irão subir pos login
 'http_proxy': { /* Array com os dados para setar o proxy */
         'username': 'usuario1243', // usuario para autenticação do proxy
         'password': 'usuario1243', // senha para a autenticação do proxy
@@ -56,9 +57,10 @@
 ** RESPOSTA **
 {
 	'logout' = true, // Se true a tela devera se bloqueada se false não sera e deverá especificar tudo abaixo
-	'clean_apps' = true, // Se true fechara os aplicativos especificados
+	'clean_apps' = ['firefox-bin', 'pidgin'], // Lista\Null, Lista de aplicativos para serem fechados
 	'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
 	'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
+    'after_action' = 0, //Numerico, 0 para nao fazer nada, 1 para shutdown, 2 para reboot, 3 para dar logout no gdm, 4 para sair do telecentros client
 	'http_proxy': { /* Array com os dados para setar o proxy */
         	      'username': 'usuario1243', // usuario para autenticação do proxy
 		      'password': 'usuario1243', // senha para a autenticação do proxy
@@ -79,6 +81,7 @@
 ** RESPOSTA **
 {
 	'error': 'blah blah', // VARIAVEL: String\NUll, String para esclarecer por que o logout nao foi authorizado, se null o logout foi authorizado
-	'clean_apps' = true, // Se true fechara os aplicativos especificados
+	'clean_apps' = ['firefox-bin', 'pidgin'], // Lista\Null, Lista de aplicativos para serem fechados
+    'after_action' = 0, //Numerico, 0 para nao fazer nada, 1 para shutdown, 2 para reboot, 3 para dar logout no gdm, 4 para sair do telecentros client
 	#TODO: implement actions after
 }

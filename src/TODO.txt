@@ -1,17 +1,24 @@
-TODO:
+Pronto:
+* Simplificar a interface do Client - pronto
+* Mudar tela de about - pronto
 
-* HttpDownload com suport a response 304 para evitar que baixe novamente o arquivo - baixa
-* Reconectar caso dê erro na postagem de informações - média
-* Sign-up com Webkit - Alta - Tests
-* Mover Arquivos de Configurações para /etc - média
-* Bloquear não e-mail no buttão ok - muito baixa
-* Script para setar o proxy - medio
-* Logo do programa - muito baixa
-* Mudar tela de about - baixa
-* Medidor de Tempo - tests
-* Tradução via - gettext - média
+EM Tests
 * Bloqueio Tela por tempo terminar- tests
 * Perguntar se há mais tempo no servidor - tests
-* Enviar lista de aplicações para finalizarem no final da sessão - média
-* Shutdown e reboot no check_time - média
-* Alertar quando o tempo estiver acabando = media
+* Enviar lista de aplicações para finalizarem no final da sessão - tests
+* Shutdown e reboot no check_time - tests
+* Sign-up com Webkit - Alta - Tests
+* Medidor de Tempo - tests
+* Script para setar o proxy - Tests
+* Gerar um up-apps para o Client - tests
+* Alertar quando o tempo estiver acabando = tests
+
+TODO:
+* HttpDownload com suport a response 304 para evitar que baixe novamente o arquivo - baixa
+* Reconectar caso dê erro na postagem de informações - média
+* Mover Arquivos de Configurações para /etc - média
+* Bloquear não e-mail no buttão ok - muito baixa
+* Logo do programa - muito baixa
+* Tradução via - gettext - média
+* Gerar um ./configure e make debian - media
+* Documentar em UML - Media-Alta
