@@ -1,5 +1,5 @@
 
-uidir = $(datadir)/OpenlhClient/ui
+uidir = $(datadir)/TeleCentros/ui
 ui_DATA = \
 	applet.ui \
 	connect_server.ui \

@@ -1,10 +1,10 @@
-iconsdir = $(datadir)/OpenlhClient/icons
+iconsdir = $(datadir)/TeleCentros/icons
 icons_DATA = \
-	openlh-client.png \
-	openlh-client.svg 
+	telecentros.png \
+	telecentros.svg 
 
 scalabledir = $(datadir)/icons/hicolor/scalable/apps
-scalable_DATA = openlh-client.svg
+scalable_DATA = telecentros.svg
 
 EXTRA_DIST = $(icons_DATA)
 

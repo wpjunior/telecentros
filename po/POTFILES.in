@@ -1,0 +1,9 @@
+[encoding: UTF-8]
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+src/telecentros.py
+src/TeleCentros/globals.py
+src/TeleCentros/ui/login.py
+src/TeleCentros/main.py
+src/TeleCentros/ui/dialogs.py
+src/TeleCentros/utils.py

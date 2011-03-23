@@ -1,5 +1,5 @@
-openlhdir = $(pythondir)/OpenlhClient
-openlh_LTLIBRARIES = gdm.la
+telecentrosdir = $(pythondir)/TeleCentros
+telecentros_LTLIBRARIES = gdm.la
 
 gdm_la_LDFLAGS = \
 	-module \
@@ -15,5 +15,5 @@ gdm_la_LIBADD = \
 
 gdm_la_SOURCES = \
 	gdm-logout-action.c \
-   	gdm-logout-action.h \
-   	main.c
+	gdm-logout-action.h \
+	main.c
