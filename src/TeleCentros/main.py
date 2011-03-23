@@ -129,7 +129,9 @@ class Client:
         self.tray_menu = self.xml.get_object('tray_menu')
         self.show_window_menu = self.xml.get_object('show_window_menu')
         
+        self.main_window.set_icon_name('telecentros')
         self.main_window.show()
+        
         self.visible = True
         self.show_window_menu.set_active(True)
         
@@ -389,13 +391,18 @@ class Client:
     def stop_monitory_status(self):
         if self.update_time_handler_id:
             gobject.source_remove(self.update_time_handler_id)
-    
+
+    def on_identify_response_timeout(self):
+        self.json_requester.request('POST', {'cmd': 'identify', 'mac': self.mac_id, 'os_name': self.os_name,
+                                             'os_version': self.os_version},
+                                    self.on_identify_response, None)
+
     def on_identify_response(self, response):
         self.login_window.set_lock_all(False)
 
         if response.error:
             self.login_window.err_box.set_text(str(response.error))
-            #TODO: re-connect in 1 min
+            gobject.timeout_add(30000, self.on_identify_response_timeout)
             return
 
         if response.json_data:
@@ -403,8 +410,8 @@ class Client:
 
             if not obj:
                 self.login_window.err_box.set_text(_("Bad Response"))
+                gobject.timeout_add(30000, self.on_identify_response_timeout)
                 return
-                #TODO: re-connect in 1 min
 
             if obj.has_key('name') and obj['name']:
                 self.login_window.set_title(obj['name'])

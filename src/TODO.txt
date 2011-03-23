@@ -12,13 +12,13 @@ EM Tests
 * Script para setar o proxy - Tests
 * Gerar um up-apps para o Client - tests
 * Alertar quando o tempo estiver acabando = tests
+* Logo do programa - tests
+* Tradução via - gettext - tests
+* Gerar um ./configure e make debian - tests
+* Reconectar caso dê erro na postagem de informações - tests
 
 TODO:
 * HttpDownload com suport a response 304 para evitar que baixe novamente o arquivo - baixa
-* Reconectar caso dê erro na postagem de informações - média
 * Mover Arquivos de Configurações para /etc - média
 * Bloquear não e-mail no buttão ok - muito baixa
-* Logo do programa - muito baixa
-* Tradução via - gettext - média
-* Gerar um ./configure e make debian - media
 * Documentar em UML para o PHP implementar - Media-Alta

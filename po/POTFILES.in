@@ -7,3 +7,5 @@ src/TeleCentros/ui/login.py
 src/TeleCentros/main.py
 src/TeleCentros/ui/dialogs.py
 src/TeleCentros/utils.py
+data/ui/login.ui
+data/ui/main.ui

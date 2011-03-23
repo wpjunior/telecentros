@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-23 09:13-0300\n"
+"POT-Creation-Date: 2011-03-23 11:06-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,40 +72,40 @@ msgid ""
 "exceeded"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:140
+#: ../src/TeleCentros/main.py:142
 msgid "TeleCentros"
 msgstr ""
 
 #. check
-#: ../src/TeleCentros/main.py:201
+#: ../src/TeleCentros/main.py:203
 #, python-format
 msgid "Closing applications in %0.2d seconds"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:265
+#: ../src/TeleCentros/main.py:267
 msgid "Unlimited"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:355 ../src/TeleCentros/main.py:364
+#: ../src/TeleCentros/main.py:357 ../src/TeleCentros/main.py:366
 msgid "Time is running out"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:356 ../src/TeleCentros/main.py:365
+#: ../src/TeleCentros/main.py:358 ../src/TeleCentros/main.py:367
 #, python-format
 msgid ""
 "With just %s\n"
 "Save your work session that soon will be finalized"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:373
+#: ../src/TeleCentros/main.py:375
 msgid "None"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:405 ../src/TeleCentros/main.py:484
+#: ../src/TeleCentros/main.py:407 ../src/TeleCentros/main.py:486
 msgid "Bad Response"
 msgstr ""
 
-#: ../src/TeleCentros/main.py:558
+#: ../src/TeleCentros/main.py:560
 msgid ""
 "<big><b>Are you sure you want to Log out of this system now?</b></big>\n"
 "\n"

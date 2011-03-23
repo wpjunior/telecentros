@@ -7,21 +7,21 @@
         <child>
           <object class="GtkAction" id="menuitem1">
             <property name="name">menuitem1</property>
-            <property name="label" translatable="yes">_File</property>
+            <property name="label" translatable="yes">_Arquivo</property>
           </object>
         </child>
         <child>
           <object class="GtkAction" id="logout_menuitem">
             <property name="stock_id">gtk-disconnect</property>
             <property name="name">logout_menuitem</property>
-            <property name="label" translatable="yes">_Logout</property>
+            <property name="label" translatable="yes">_Sair</property>
             <signal handler="on_logout_menuitem_activate" name="activate"/>
           </object>
         </child>
         <child>
           <object class="GtkAction" id="menuitem4">
             <property name="name">menuitem4</property>
-            <property name="label" translatable="yes">_Help</property>
+            <property name="label" translatable="yes">A_juda</property>
           </object>
         </child>
         <child>
@@ -50,7 +50,7 @@
         <child>
           <object class="GtkToggleAction" id="show_window_menu">
             <property name="name">show_window_menu</property>
-            <property name="label" translatable="yes">_Show Main Window</property>
+            <property name="label" translatable="yes">_Mostrar Janela Principal</property>
             <signal handler="on_show_hide" name="toggled"/>
           </object>
         </child>
@@ -65,7 +65,7 @@
           <object class="GtkAction" id="imagemenuitem1">
             <property name="stock_id">gtk-disconnect</property>
             <property name="name">imagemenuitem1</property>
-            <property name="label" translatable="yes">_Logout</property>
+            <property name="label" translatable="yes">_Sair</property>
             <signal handler="on_logout_menuitem_activate" name="activate"/>
           </object>
         </child>
@@ -110,7 +110,7 @@
                   <object class="GtkLabel" id="label5">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Information&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Informação&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                   </object>
@@ -134,7 +134,7 @@
                           <object class="GtkLabel" id="login">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Name:</property>
+                            <property name="label" translatable="yes">Nome:</property>
                             <property name="use_underline">True</property>
                           </object>
                           <packing>
@@ -172,7 +172,7 @@
                   <object class="GtkLabel" id="label7">
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Time&lt;/b&gt;</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Tempo&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="use_underline">True</property>
                   </object>
@@ -195,7 +195,7 @@
                           <object class="GtkLabel" id="remaining_label">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Remaining:</property>
+                            <property name="label" translatable="yes">Faltando:</property>
                             <property name="use_markup">True</property>
                             <property name="use_underline">True</property>
                           </object>
@@ -210,7 +210,7 @@
                           <object class="GtkLabel" id="elapsed_label">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Elapsed:</property>
+                            <property name="label" translatable="yes">Passado:</property>
                           </object>
                           <packing>
                             <property name="top_attach">1</property>
@@ -223,7 +223,7 @@
                           <object class="GtkLabel" id="label3">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
-                            <property name="label" translatable="yes">Time:</property>
+                            <property name="label" translatable="yes">Tempo:</property>
                           </object>
                           <packing>
                             <property name="x_options">GTK_FILL</property>

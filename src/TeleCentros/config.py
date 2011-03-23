@@ -17,5 +17,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 INSTALLED = True
-PREFIX = "/opt/tel"
+PREFIX = "/usr"
 APP_VERSION = "0.1"
