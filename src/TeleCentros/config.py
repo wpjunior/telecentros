@@ -16,6 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-INSTALLED = False
-PREFIX = "/usr"
-APP_VERSION = "0.1git"
+INSTALLED = True
+PREFIX = "/opt/tel"
+APP_VERSION = "0.1"

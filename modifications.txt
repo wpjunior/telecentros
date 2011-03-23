@@ -1,0 +1,1234 @@
+diff --git a/DOCUMENTACTION.txt b/DOCUMENTACTION.txt
+index 6d8760e..c2e697d 100644
+--- a/DOCUMENTACTION.txt
++++ b/DOCUMENTACTION.txt
+@@ -16,6 +16,7 @@
+ 'error': null, /* VARIAVEL: Null/String; Caso aconteça algum erro */
+ 'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
+ 'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
++'up_apps': ['firefox',['xterm', '-c']] //Lista/Null de Aplicações que irão subir pos login
+ 'http_proxy': { /* Array com os dados para setar o proxy */
+         'username': 'usuario1243', // usuario para autenticação do proxy
+         'password': 'usuario1243', // senha para a autenticação do proxy
+@@ -56,9 +57,10 @@
+ ** RESPOSTA **
+ {
+ 	'logout' = true, // Se true a tela devera se bloqueada se false não sera e deverá especificar tudo abaixo
+-	'clean_apps' = true, // Se true fechara os aplicativos especificados
++	'clean_apps' = ['firefox-bin', 'pidgin'], // Lista\Null, Lista de aplicativos para serem fechados
+ 	'full_name': 'Eurecas Silva', // Variavel: String; Nome completo do usuário logado
+ 	'time': 300, //Variavel: Integer/Null; Tempo da sessão em segundos; null se for por tempo indeterminado
++    'after_action' = 0, //Numerico, 0 para nao fazer nada, 1 para shutdown, 2 para reboot, 3 para dar logout no gdm, 4 para sair do telecentros client
+ 	'http_proxy': { /* Array com os dados para setar o proxy */
+         	      'username': 'usuario1243', // usuario para autenticação do proxy
+ 		      'password': 'usuario1243', // senha para a autenticação do proxy
+@@ -79,6 +81,7 @@
+ ** RESPOSTA **
+ {
+ 	'error': 'blah blah', // VARIAVEL: String\NUll, String para esclarecer por que o logout nao foi authorizado, se null o logout foi authorizado
+-	'clean_apps' = true, // Se true fechara os aplicativos especificados
++	'clean_apps' = ['firefox-bin', 'pidgin'], // Lista\Null, Lista de aplicativos para serem fechados
++    'after_action' = 0, //Numerico, 0 para nao fazer nada, 1 para shutdown, 2 para reboot, 3 para dar logout no gdm, 4 para sair do telecentros client
+ 	#TODO: implement actions after
+ }
+diff --git a/data/ui/main.ui b/data/ui/main.ui
+index 9aaa056..3862c52 100644
+--- a/data/ui/main.ui
++++ b/data/ui/main.ui
+@@ -19,36 +19,6 @@
+           </object>
+         </child>
+         <child>
+-          <object class="GtkAction" id="menuitem2">
+-            <property name="name">menuitem2</property>
+-            <property name="label" translatable="yes">_View</property>
+-          </object>
+-        </child>
+-        <child>
+-          <object class="GtkToggleAction" id="information_menuitem">
+-            <property name="active">True</property>
+-            <property name="name">information_menuitem</property>
+-            <property name="label" translatable="yes">_Information</property>
+-            <signal handler="on_information_toggled" name="toggled"/>
+-          </object>
+-        </child>
+-        <child>
+-          <object class="GtkToggleAction" id="time_elapsed_menuitem">
+-            <property name="active">True</property>
+-            <property name="name">time_elapsed_menuitem</property>
+-            <property name="label" translatable="yes">_Time Elapsed</property>
+-            <signal handler="on_time_elapsed_toggled" name="toggled"/>
+-          </object>
+-        </child>
+-        <child>
+-          <object class="GtkToggleAction" id="time_remaining_menuitem">
+-            <property name="active">True</property>
+-            <property name="name">time_remaining_menuitem</property>
+-            <property name="label" translatable="yes">_Time Remaining</property>
+-            <signal handler="on_time_remaining_toggled" name="toggled"/>
+-          </object>
+-        </child>
+-        <child>
+           <object class="GtkAction" id="menuitem4">
+             <property name="name">menuitem4</property>
+             <property name="label" translatable="yes">_Help</property>
+@@ -68,11 +38,6 @@
+         <menu action="menuitem1">
+           <menuitem action="logout_menuitem"/>
+         </menu>
+-        <menu action="menuitem2">
+-          <menuitem action="information_menuitem"/>
+-          <menuitem action="time_elapsed_menuitem"/>
+-          <menuitem action="time_remaining_menuitem"/>
+-        </menu>
+         <menu action="menuitem4">
+           <menuitem action="about_menuitem"/>
+         </menu>
+diff --git a/src/TODO.txt b/src/TODO.txt
+index 641566c..a228c2f 100644
+--- a/src/TODO.txt
++++ b/src/TODO.txt
+@@ -1,17 +1,24 @@
+-TODO:
++Pronto:
++* Simplificar a interface do Client - pronto
++* Mudar tela de about - pronto
++
++EM Tests
++* Bloqueio Tela por tempo terminar- tests
++* Perguntar se há mais tempo no servidor - tests
++* Enviar lista de aplicações para finalizarem no final da sessão - tests
++* Shutdown e reboot no check_time - tests
++* Sign-up com Webkit - Alta - Tests
++* Medidor de Tempo - tests
++* Script para setar o proxy - Tests
++* Gerar um up-apps para o Client - tests
++* Alertar quando o tempo estiver acabando = tests
+ 
++TODO:
+ * HttpDownload com suport a response 304 para evitar que baixe novamente o arquivo - baixa
+ * Reconectar caso dê erro na postagem de informações - média
+-* Sign-up com Webkit - Alta - Tests
+ * Mover Arquivos de Configurações para /etc - média
+ * Bloquear não e-mail no buttão ok - muito baixa
+-* Script para setar o proxy - medio
+ * Logo do programa - muito baixa
+-* Mudar tela de about - baixa
+-* Medidor de Tempo - tests
+ * Tradução via - gettext - média
+-* Bloqueio Tela por tempo terminar- tests
+-* Perguntar se há mais tempo no servidor - tests
+-* Enviar lista de aplicações para finalizarem no final da sessão - média
+-* Shutdown e reboot no check_time - média
+-* Alertar quando o tempo estiver acabando = media
++* Gerar um ./configure e make debian - media
++* Documentar em UML - Media-Alta
+diff --git a/src/TeleCentros/globals.py b/src/TeleCentros/globals.py
+index e21a6ae..4ed4975 100644
+--- a/src/TeleCentros/globals.py
++++ b/src/TeleCentros/globals.py
+@@ -68,7 +68,7 @@ CLIENT_TLS_TEMPLATE = ospath.join(CERTS_PATH, 'telecentros.template')
+ CLIENT_ICON_NAME = 'telecentros'
+ 
+ ##APP
+-APP_NAME = 'Telecentros'
++APP_NAME = 'Cliente Telecentros'
+ APP_SITE = 'http://www.lethus.com.br'
+ APP_COPYRIGHT = 'Telecentros - Tethus TI'
+ 
+@@ -87,7 +87,7 @@ language = language[:end]
+ ##End internacionalize
+ 
+ ##APP Proprerties
+-APP_COMMENTS = _('a Free LAN House Client')
++APP_COMMENTS = None
+ CLIENT_APP_NAME = _('OpenLanHouse - Client')
+ 
+ MIN_NICK = 4
+@@ -105,24 +105,17 @@ MAX_CHUNK_SIZE = 10485760
+ COLOR_YELLOW = '#FCE94F'
+ COLOR_RED = '#EF2929'
+ 
+-APP_DOCS = ""
++APP_DOCS = ('Wilson Pinto Júnior <wpjunior@lethus.com.br>',)
+ 
+-APP_AUTHORS = ('Wilson Pinto Júnior <wilson@openlanhouse.org>',)
+-APP_ARTISTS = ('Wilson Pinto Júnior <wilson@openlanhouse.org>',)
++APP_AUTHORS = ('Wilson Pinto Júnior <wpjunior@lethus.com.br>',)
++APP_ARTISTS = ""
+ 
+ 
+-APP_CONTRIB = ('Bruno Gonçalves <bigbruno@gmail.com>',
+-               'Gabriel Falcão <gabriel@guake-terminal.org>',
+-               'Lincoln de Sousa <lincoln@guake-terminal.org>',
+-               'Gustavo Noronha Silva <gns@gnome.org>',
+-               'Og Maciel <ogmaciel@gnome.org>'
+-               )
++APP_CONTRIB = ()
+ 
+-APP_TRANSLATORS = {'pt_BR': ("Wilson Pinto Júnior <wilson@openlanhouse.org>\n"
+-                             "Vladimir Melo <vladimirmelo.psi@gmail.com>"),
+-                   'es_ES': "Pier Jose Gotta Perez <piegope@fslcol.org>"}
++APP_TRANSLATORS = ""
+ 
+-APP_LICENCE = _('OpenLanhouse is free software: you can redistribute it and/or modify\n'
++APP_LICENCE = _('TeleCentros Client is free software: you can redistribute it and/or modify\n'
+                 'it under the terms of the GNU General Public License as published by\n'
+                 'the Free Software Foundation, either version 3 of the License, or\n'
+                 '(at your option) any later version.\n\n'
+diff --git a/src/TeleCentros/main.py b/src/TeleCentros/main.py
+index 1f18e75..630a148 100644
+--- a/src/TeleCentros/main.py
++++ b/src/TeleCentros/main.py
+@@ -21,7 +21,7 @@ import time
+ import logging
+ import gtk
+ import gobject
+-
++import subprocess
+ from TeleCentros.ConfigClient import get_default_client
+ 
+ from TeleCentros.ui import icons
+@@ -36,6 +36,12 @@ from TeleCentros.utils import HttpDownload
+ from TeleCentros.get_macaddr import get_route_mac_address
+ from TeleCentros.jsonrequester import JSONRequester
+ from TeleCentros.httpproxy import ProxySetter
++
++try:
++    import pynotify
++except:
++    pynotify = None
++
+ # Check DBus
+ try:
+     from TeleCentros.dbus_manager import DbusManager
+@@ -60,16 +66,9 @@ from os import path as ospath
+ _ = gettext.gettext
+ 
+ class Client:
+-    
+-    name = None
+-    description = None
+     locked = False
+     informations = {}
+-    other_info = {}
+-    logo_md5 = None
+-    background_md5 = None
+     visible = False
+-    monitory_handler_id = 0
+     update_time_handler_id = 0
+     cleanup_apps_id = 0
+     cleanup_apps_timeout = 30
+@@ -82,6 +81,8 @@ class Client:
+     os_name = ""
+     os_version = ""
+     sign_url = None
++    cleanup_apps = []
++    notification = None
+     
+     def __init__(self):
+         
+@@ -90,6 +91,10 @@ class Client:
+         self.dbus_manager = DbusManager(self)
+         self.script_manager = ScriptManager()
+         self.proxy_setter = ProxySetter()
++
++        if pynotify and not pynotify.is_initted():
++            pynotify.init('telecentros')
++
+         # Get operating system version
+         o = get_os()
+         if o[0]:
+@@ -127,10 +132,6 @@ class Client:
+         self.main_window.show()
+         self.visible = True
+         self.show_window_menu.set_active(True)
+-
+-        self.show_informations(True)
+-        self.show_time_elapsed(True)
+-        self.show_time_remaining(True)
+         
+         self.xml.connect_signals(self)
+         
+@@ -175,64 +176,6 @@ class Client:
+     
+     def on_about_menuitem_activate(self, obj):
+         dialogs.about(self.logo, self.main_window)
+-    
+-    def set_myinfo(self, data):
+-        if data.has_key('name'):
+-            self.name = data['name']
+-            self.dbus_manager.host_name_changed(self.name)
+-            
+-            if 'welcome_msg' in self.informations:
+-                self.login_window.set_title(
+-                    self.informations['welcome_msg'].replace("%n", self.name)
+-                    )
+-            
+-            self.logger.debug('My host name is "%s"' % data['name'])
+-            
+-        
+-        if data.has_key('description'):
+-            self.description = data['description']
+-            self.dbus_manager.description_changed(self.description)
+-            self.logger.debug('My host description is "%s"' % data['description'])
+-    
+-    def set_information(self, data):
+-        assert isinstance(data, dict)
+-        
+-        for key in data:
+-            self.informations[key] = data[key]
+-        
+-        if 'welcome_msg' in data:
+-            self.login_window.set_title(
+-                    self.informations['welcome_msg'].replace("%n", self.name)
+-                    )
+-            self.dbus_manager.welcome_msg_changed(self.informations['welcome_msg'])
+-        
+-        if 'default_welcome_msg' in data:
+-            if data['default_welcome_msg']:
+-                self.login_window.set_title(_('Welcome'))
+-                self.dbus_manager.welcome_msg_changed(_('Welcome'))
+-            else:
+-                self.login_window.set_title(
+-                       self.informations['welcome_msg'].replace("%n", self.name)
+-                       )
+-                self.dbus_manager.welcome_msg_changed(self.informations['welcome_msg'])
+-        
+-        if 'currency' in data:
+-            self.currency = data['currency']
+-            self.dbus_manager.currency_changed(self.currency)
+-        
+-        if 'use_background' in data:
+-            if data['use_background']:
+-                self.login_window.set_background(BACKGROUND_CACHE)
+-            else:
+-                self.login_window.set_background(None)
+-        
+-        if 'use_logo' in data:
+-            if data['use_logo']:
+-                self.login_window.set_logo(LOGO_CACHE)
+-            else:
+-                self.login_window.set_logo(None)
+-
+-        print self.informations
+         
+     def reset_widgets(self):
+         self.full_name.set_text("")
+@@ -240,37 +183,22 @@ class Client:
+         self.elapsed_pb.set_fraction(0.0)
+         self.remaining_pb.set_text("")
+         self.remaining_pb.set_fraction(0.0)
+-        self.other_info = {}
+     
+     def do_cleanup_timeout(self):
+         self.cleanup_apps_timeout -= 1
+ 
+-        if 'finish_action' in self.informations:
+-            action = self.informations['finish_action']
+-        else:
+-            action = 0
+-
+         if self.cleanup_apps_timeout == 0:
+             if self.login_window.iterable_timeout_id == 0: #check
+                 self.login_window.set_warn_message("")
+ 
+-            if ((action == 1) and ('close_apps_list' in self.informations)):
+-                for a in self.informations['close_apps_list']:
++                for a in self.cleanup_apps:
+                     kill_process(a) # Kill process
+-            
+-            if ((action == 2) and (ActionManager)):
+-                ActionManager.logout()
+ 
+             self.cleanup_apps_id = 0
+             return
+         
+         if self.login_window.iterable_timeout_id == 0: #check
+-            if (action == 1):
+-                msg = (_("Closing applications in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
+-            elif (action == 2):
+-                msg = (_("Closing desktop session in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
+-            else:
+-                msg = None
++            msg = (_("Closing applications in %0.2d seconds") % (self.cleanup_apps_timeout + 1))
+ 
+             if msg:
+                 self.login_window.set_warn_message(msg)
+@@ -278,7 +206,7 @@ class Client:
+         self.cleanup_apps_id = gobject.timeout_add_seconds(1,
+                                                            self.do_cleanup_timeout)
+ 
+-    def block(self, after, action, cleanup_apps=True):
++    def block(self, after_action=0, cleanup_apps=[]):
+ 
+         self.script_manager.pre_block()
+ 
+@@ -295,27 +223,27 @@ class Client:
+         self.stop_monitory_status()
+         self.dbus_manager.block()
+         
+-        if 'finish_action' in self.informations and 'finish_action_time' in self.informations:
+-            if self.informations['finish_action'] and cleanup_apps:
+-                self.cleanup_apps_timeout = self.informations['finish_action_time']
+-                self.do_cleanup_timeout()
++        if cleanup_apps:
++            self.cleanup_apps = cleanup_apps
++            self.cleanup_apps_timeout = 30
++            self.do_cleanup_timeout()
+         
+         self.script_manager.pos_block()
+ 
+         if not ActionManager:
+             return
+ 
+-        if not after:
+-            return
+-
+-        if action == 0 : #shutdown
++        if after_action == 1 : #shutdown
+             ActionManager.shutdown()
+             
+-        elif action == 1: #reboot
++        elif after_action == 2: #reboot
+             ActionManager.reboot()
+             
+-        elif action == 2: #logout
++        elif after_action == 3: #logout
+             ActionManager.logout()
++
++        elif after_action == 4: #quit application
++            gtk.main_quit()
+     
+     def unblock(self, time):
+         # Execute a pre unblock script
+@@ -329,9 +257,6 @@ class Client:
+         
+         self.show_window_menu.set_active(True)
+         self.main_window.show()
+-        self.show_informations(True)
+-        self.show_time_elapsed(True)
+-        self.show_time_remaining(True)
+ 
+         if self.time:
+             time_str = "%0.2d:%0.2d:%0.2d" % humanize_time(self.time)
+@@ -342,88 +267,13 @@ class Client:
+         if self.cleanup_apps_id > 0:
+             gobject.source_remove(self.cleanup_apps_id)
+             self.cleanup_apps_id = 0
+-        """
+-        if 'limited' in data and 'registred' in data:
+-            self.limited = data['limited']
+-            self.registred = data['registred']
+-            
+-            self.dbus_manager.unblock((int(data['registred']), 
+-                                       int(data['limited'])))
+-        
+-        if 'time' in data:
+-            self.time = data['time']
+-            self.dbus_manager.time_changed(data['time'])
+-        
+-        if 'registred' in data:
+-            if data['registred']:
+-                self.xml.get_object("information_vbox").show()
+-                self.xml.get_object("information_menuitem").set_sensitive(True)
+-            else:
+-                self.xml.get_object("information_vbox").hide()
+-                self.xml.get_object("information_menuitem").set_sensitive(False)
+-        
+-        if 'limited' in data:
+-            self.xml.get_object("remaining_label").set_property('visible', bool(data['limited']))
+-            self.xml.get_object("remaining_pb").set_property('visible', bool(data['limited']))
+-            self.xml.get_object("time_remaining_menuitem").set_property('sensitive', bool(data['limited']))
+-        """
++
+         self.start_monitory_status()
+         self.login_window.unlock(None)
+ 
+         # execute a pos unblock script
+         self.script_manager.pos_unblock()
+     
+-    def dispatch(self, method, params):
+-        
+-        if method == 'core.get_hash_id':
+-            return self.hash_id
+-            
+-        elif method == 'main.set_myinfo':
+-            self.set_myinfo(*params)
+-            return True
+-        
+-        elif method == 'core.set_information':
+-            self.set_information(*params)
+-            return True
+-        
+-        elif method == 'core.unblock':
+-            self.unblock(*params)
+-            return True
+-        
+-        elif method == 'core.block':
+-            self.block(*params)
+-            return True
+-        
+-        elif method == 'set_status':
+-            self.set_status(*params)
+-            return True
+-        
+-        elif method == 'system.shutdown':
+-            self.system_shutdown()
+-            return True
+-            
+-        elif method == 'system.reboot':
+-            self.system_reboot()
+-            return True
+-        
+-        elif method == 'system.logout':
+-            self.system_logout()
+-            return True
+-        
+-        elif method == 'app.quit':
+-            self.app_quit()
+-            return True
+-        
+-        elif method == 'main.set_background_md5':
+-            self.set_background_md5(*params)
+-        
+-        elif method == 'main.set_logo_md5':
+-            self.set_logo_md5(*params)
+-        
+-        else:
+-            print method, params
+-            return True
+-
+     def check_more_time(self):
+         self.json_requester.request('POST', {'cmd': 'check_time', 'mac': self.mac_id},
+                                     self.on_check_time_response, None)
+@@ -431,32 +281,36 @@ class Client:
+     def on_check_time_response(self, response):
+ 
+         if response.error:
+-            self.block(0, 0)
++            self.block()
+             return
+ 
+         if response.json_data:
+             obj = response.json_data
+ 
+             if not obj:
+-                self.block(0, 0)
++                self.block()
+                 return
+ 
+         if response.json_data:
+             obj = response.json_data
+             if not obj:
+-                self.block(0, 0)
++                self.block()
+                 return
+         
+             logout = True
+             if obj.has_key('logout'):
+                 logout = bool(obj['logout'])
+             
+-            clean_apps = True
++            clean_apps = []
+             if obj.has_key('clean_apps'):
+-                clean_apps = bool(obj['clean_apps'])
++                clean_apps = obj['clean_apps']
++
++            after_action = 0
++            if obj.has_key('after_action'):
++                after_action = int(obj['after_action'])
+ 
+             if logout:
+-                self.block(0, 0, cleanup_apps=clean_apps) #TODO: implement shutdown
++                self.block(after_action, cleanup_apps=clean_apps)
+                 return
+ 
+             if obj.has_key('time') and obj['time']:
+@@ -490,10 +344,30 @@ class Client:
+                 self.check_more_time()
+                 return
+ 
++            
++
+             self.dbus_manager.left_time_changed(mleft_time)
+             time_left_str = "%0.2d:%0.2d:%0.2d" % humanize_time(mleft_time)
+             time_left_per = float(mleft_time) / float(self.time)
+             time_elapsed_per = float(melapsed_time) / float(self.time)
++            if time_left_per <= 0.1 and pynotify: #TODO: Change
++                if not self.notification:
++                    self.notification = pynotify.Notification(_("Time is running out"),
++                                                              _("With just %s\n"
++                                                                "Save your work session that soon will be finalized") % time_left_str,
++                                                              "dialog-warning")
++                    self.notification.set_urgency(pynotify.URGENCY_CRITICAL)
++                    self.notification.set_timeout(1000)
++                    self.notification.attach_to_status_icon(self.tray_icon)
++                    self.notification.show()
++                else:
++                    self.notification.update(_("Time is running out"),
++                                             _("With just %s\n"
++                                               "Save your work session that soon will be finalized") % time_left_str,
++                                             "dialog-warning")
++                    self.notification.set_urgency(pynotify.URGENCY_CRITICAL)
++                    self.notification.set_timeout(1000)
++                    self.notification.show()
+ 
+         else:
+             time_left_str = _("None")
+@@ -508,99 +382,14 @@ class Client:
+         
+         self.update_time_handler_id = gobject.timeout_add(1000,
+                                         self.update_time_status)
+-    
+-    def monitory_status(self):
+-        print "TODO: GET STATUS ??"
+-        #request = self.netclient.request('get_status')
+-        #request.connect("done", self.on_get_status_request_done)
+-        self.monitory_handler_id = gobject.timeout_add(120000,
+-                                        self.monitory_status)
+         
+     def start_monitory_status(self):
+         self.update_time_status()
+-        self.monitory_status()
+     
+     def stop_monitory_status(self):
+-        if self.monitory_handler_id:
+-            gobject.source_remove(self.monitory_handler_id)
+         if self.update_time_handler_id:
+             gobject.source_remove(self.update_time_handler_id)
+-    """
+-    def set_status(self, data):
+-        for key in data:
+-            self.other_info[key] = data[key]
+-        
+-        if 'time' in data and 'left_time' in data and 'elapsed' in data:
+-            self.update_time = int(time.time())
+-        
+-        if 'time' in data:
+-            assert len(data['time']) == 2
+-            assert self.limited
+-            self.time = data['time']
+-            self.mtime = ((self.time[0] * 3600) + self.time[1] * 60)
+-            time_str = "%0.2d:%0.2d" % tuple(self.time)
+-            self.time_str.set_text(time_str)
+-            self.dbus_manager.time_changed(self.time)
+-        
+-        if 'left_time' in data:
+-            assert self.limited
+-            self.left_time = data['left_time']
+-        
+-        if 'elapsed' in data:
+-            self.elapsed_time = data['elapsed']
+-        
+-    def on_get_status_request_done(self, request, value):
+-        self.update_time = int(time.time())
+-        self.limited = value['limited']
+-        self.elapsed_time = value['elapsed']
+-        
+-        if self.limited:
+-            self.left_time = value['left_time']
+-            self.time = value['time']
+-            self.mtime = ((self.time[0] * 3600) + self.time[1] * 60)
+-            
+-            assert len(value['time']) == 2
+-            time_str = "%0.2d:%0.2d" % tuple(self.time)
+-        else:
+-            self.left_time = None
+-            self.time = None
+-            self.mtime = None
+-            time_str = _("Unlimited")
+-        
+-        self.time_str.set_text(time_str)
+-    """
+-    def show_informations(self, status):
+-        self.interative = False
+-        self.xml.get_object("information_vbox").set_property('visible', status)
+-        self.xml.get_object("information_menuitem").set_active(status)
+-        self.interative = True
+-    
+-    def show_time_elapsed(self, status):
+-        self.interative = False
+-        self.xml.get_object("elapsed_label").set_property('visible', status)
+-        self.xml.get_object("elapsed_pb").set_property('visible', status)
+-        self.xml.get_object("time_elapsed_menuitem").set_active(status)
+-        self.interative = True
+-    
+-    def show_time_remaining(self, status):
+-        self.interative = False
+-        self.xml.get_object("remaining_label").set_property('visible', status)
+-        self.xml.get_object("remaining_pb").set_property('visible', status)
+-        self.xml.get_object("time_remaining_menuitem").set_active(status)
+-        self.interative = True
+     
+-    def on_information_toggled(self, obj):
+-        if self.interative:
+-            self.show_informations(obj.get_active())
+-        
+-    def on_time_elapsed_toggled(self, obj):
+-        if self.interative:
+-            self.show_time_elapsed(obj.get_active())
+-    
+-    def on_time_remaining_toggled(self, obj):
+-        if self.interative:
+-            self.show_time_remaining(obj.get_active())
+-
+     def on_identify_response(self, response):
+         self.login_window.set_lock_all(False)
+ 
+@@ -649,7 +438,7 @@ class Client:
+                 self.login_window.set_logo(None)
+ 
+     def on_logout_response(self, response):
+-        print 'on_logout', response
++
+         if response.error:
+             dlg = dialogs.ok_only(text=str(response.error), ICON=gtk.MESSAGE_ERROR)
+             dlg.show()
+@@ -670,11 +459,15 @@ class Client:
+                 dlg.show()
+                 return
+ 
+-            clean_apps = True
++            clean_apps = []
+             if obj.has_key('clean_apps'):
+-                clean_apps = bool(obj['clean_apps'])
++                clean_apps = obj['clean_apps']
++
++            after_action = 0
++            if obj.has_key('after_action'):
++                after_action = int(obj['after_action'])
+ 
+-            self.block(0, 0, cleanup_apps=clean_apps)
++            self.block(after_action, cleanup_apps=clean_apps)
+ 
+     def on_login_response(self, response):
+         self.login_window.set_lock_all(False)
+@@ -703,11 +496,18 @@ class Client:
+             else:
+                 rtime = None
+ 
++            up_apps = None
++            if obj.has_key('up_apps') and obj['up_apps']:
++                up_apps = obj['up_apps']
++
+             if auth:
+                 self.start_time = time.time()
+                 self.login_attempts = 0
+                 self.unblock(rtime)
+ 
++                if up_apps:
++                    self.start_apps(up_apps)
++
+             if obj.has_key('full_name') and obj['full_name']:
+                 self.full_name.set_text(obj['full_name'])
+                 self.dbus_manager.full_name_changed(obj['full_name'])
+@@ -765,27 +565,6 @@ class Client:
+             self.json_requester.request('POST', {'cmd': 'logout', 'mac': self.mac_id},
+                                         self.on_logout_response, None)
+ 
+-    def system_shutdown(self):
+-        if not ActionManager:
+-            return
+-        
+-        ActionManager.shutdown()
+-
+-    def system_reboot(self):
+-        if not ActionManager:
+-            return
+-        
+-        ActionManager.reboot()
+-
+-    def system_logout(self):
+-        if not ActionManager:
+-            return
+-        
+-        ActionManager.logout()
+-
+-    def app_quit(self):
+-        gtk.main_quit()
+-        
+     def get_background(self, url):
+         downloader = HttpDownload()
+         e = downloader.run(url, directory=CACHE_PATH, fn="wallpaper")
+@@ -796,6 +575,14 @@ class Client:
+         e = downloader.run(url, directory=CACHE_PATH, fn="logo")
+         return e
+ 
+-        
+-
+-        
++    def start_apps(self, apps):
++        for app in apps:
++            if not isinstance(app, list):
++                app = [app]
++
++            for i in range(len(app)): #hack set str
++                app[i] = str(app[i])
++                
++            po = subprocess.Popen(app, stdin=None, stdout=subprocess.PIPE,
++                          stderr=subprocess.PIPE)
++            print 'start', app, po
+diff --git a/src/TeleCentros/ui/background.py b/src/TeleCentros/ui/background.py
+index 4534dbc..7b4754a 100644
+--- a/src/TeleCentros/ui/background.py
++++ b/src/TeleCentros/ui/background.py
+@@ -1,7 +1,7 @@
+ #!/usr/bin/env python
+ # -*- coding: utf-8 -*-
+ #
+-#  Copyright (C) 2008 Wilson Pinto Júnior <wilson@openlanhouse.org>
++#  Copyright (C) 2008-2011 Wilson Pinto Júnior <wilsonpjunior@gmail.com>
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+diff --git a/src/TeleCentros/ui/dialogs.py b/src/TeleCentros/ui/dialogs.py
+index e031801..10da75c 100644
+--- a/src/TeleCentros/ui/dialogs.py
++++ b/src/TeleCentros/ui/dialogs.py
+@@ -69,7 +69,7 @@ class about(gtk.AboutDialog):
+         if Parent:
+             self.set_transient_for(Parent)
+         
+-        self.set_name(_("TeleCentros"))
++        self.set_name(_("Client TeleCentros"))
+         self.set_version(APP_VERSION)
+         
+         self.set_website(APP_SITE)
+@@ -82,14 +82,6 @@ class about(gtk.AboutDialog):
+         self.set_artists(APP_ARTISTS)
+         self.set_license(APP_LICENCE)
+         
+-        # TRANSLATORS
+-        lang = os_getenv('LANG', 'en_US').split('.')[0]
+-        if lang in APP_TRANSLATORS:
+-            translator = APP_TRANSLATORS[lang]
+-            self.set_translator_credits(translator)
+-        else:
+-            self.set_translator_credits(_("translator-credits"))
+-        
+         self.run()
+         self.destroy()
+ 
+diff --git a/src/TeleCentros/ui/login.py b/src/TeleCentros/ui/login.py
+index b4b9596..d23d10e 100644
+--- a/src/TeleCentros/ui/login.py
++++ b/src/TeleCentros/ui/login.py
+@@ -224,30 +224,7 @@ class Login:
+             self.label.set_text("")
+         else:
+             self.set_current(self.current_widget)
+-    """
+-    def iterable(self):
+-        if self.timeout_connect != 0:
+-            if self.run_interable:
+-                self.timeout_connect -= 1
+-                self.warn_msg.set_text(_('The connection to the server was ' 
+-                                         'lost, trying to connect in %0.2d '
+-                                         'seconds.') % 
+-                                         (self.timeout_connect + 1))
+-                
+-                self.iterable_timeout_id = timeout_add(1000, self.iterable)
+-                return
+-            else:
+-                self.warn_msg.set_text("")
+-                self.timeout_connect = 15
+-        else:
+-            self.run_interable = False
+-            self.main.reload_network()
+-            
+-            if not self.main.netclient.start():
+-                self.run_interable = True
+-                self.timeout_connect = 15
+-                self.iterable_timeout_id = timeout_add(1000, self.iterable)
+-    """
++
+     def on_ready_iterable(self):
+         if self.on_ready != 0:
+             if self.on_ready_run_interable:
+@@ -267,31 +244,7 @@ class Login:
+             self.set_lock_all(False)
+             self.on_ready_run_interable = False
+             self.warn_msg.set_text("")
+-            self.main.login_attempts = 0
+-    """    
+-    def set_connected(self, status):
+-        self.set_lock_all(not(status))
+-        
+-        if not(status) and not self.background.visible:
+-            self.lock()
+-        
+-        if not status:
+-            if self.iterable_timeout_id:
+-                source_remove(self.iterable_timeout_id)
+-                self.iterable_timeout_id = 0
+-            
+-            self.run_interable = True
+-            self.timeout_connect = 15
+-            self.iterable()
+-            
+-        else:
+-            if self.iterable_timeout_id:
+-                source_remove(self.iterable_timeout_id)
+-                self.iterable_timeout_id = 0
+-            
+-            self.warn_msg.set_text('')
+-            self.wm_title.set_text(_("OpenLanhouse Client - Connected"))
+-    """      
++            self.main.login_attempts = 0   
+ 
+     def set_warn_message(self, message):
+         self.warn_msg.set_text(message)
+@@ -314,5 +267,3 @@ class Login:
+         webview = webkitscrolled.get_children()[0]
+         webkitscrolled.remove(webview)
+         webview.destroy()
+-    
+-        print 'back', webview
+diff --git a/src/TeleCentros/ui/notification.py b/src/TeleCentros/ui/notification.py
+deleted file mode 100644
+index 8521b74..0000000
+--- a/src/TeleCentros/ui/notification.py
++++ /dev/null
+@@ -1,320 +0,0 @@
+-#!/usr/bin/env python
+-# -*- coding: utf-8 -*-
+-#
+-#  Copyright (C) 2008 Wilson Pinto Júnior <wilson@openlanhouse.org>
+-#
+-# This program is free software: you can redistribute it and/or modify
+-# it under the terms of the GNU General Public License as published by
+-# the Free Software Foundation, either version 3 of the License, or
+-# (at your option) any later version.
+-#
+-# This program is distributed in the hope that it will be useful,
+-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-# GNU General Public License for more details.
+-#
+-# You should have received a copy of the GNU General Public License
+-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-
+-import os
+-import gtk
+-import gobject
+-
+-global notify_daemon_support
+-
+-try:
+-    import pynotify
+-    notify_daemon_support = True
+-except:
+-    pynotify = None
+-    notify_daemon_support = False
+-
+-global notify_init
+-notify_init = False
+-
+-def popup_init(name):
+-    # Notification daemon support
+-    global notify_init
+-    global notify_daemon_support
+-    if notify_daemon_support:
+-        if not pynotify.is_initted():
+-            if not pynotify.init(name):
+-                notify_daemon_support = False
+-                notify_init = False
+-            else:
+-                notify_init = True
+-
+-BG_COLOR = "white"
+-POS_X = 0
+-POS_Y = 0
+-
+-class PopupManager:
+-    popups_notification_height = 0
+-    popup_notification_windows = []
+-
+-popup_manager = PopupManager()
+-
+-XML_WINDOW = """\
+-<?xml version="1.0"?>
+-<!--*- mode: xml -*-->
+-<interface>
+-  <object class="GtkWindow" id="popup_notification_window">
+-    <property name="border_width">1</property>
+-    <property name="width_request">312</property>
+-    <property name="height_request">95</property>
+-    <property name="title" translatable="yes"/>
+-    <property name="type">GTK_WINDOW_POPUP</property>
+-    <property name="window_position">GTK_WIN_POS_NONE</property>
+-    <property name="modal">False</property>
+-    <property name="resizable">False</property>
+-    <property name="destroy_with_parent">False</property>
+-    <property name="decorated">False</property>
+-    <property name="skip_taskbar_hint">True</property>
+-    <property name="skip_pager_hint">True</property>
+-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+-    <property name="gravity">GDK_GRAVITY_SOUTH_EAST</property>
+-    <property name="focus_on_map">True</property>
+-    <property name="urgency_hint">False</property>
+-    <signal handler="on_popup_notification_window_button_press_event" name="button_press_event"/>
+-    <child>
+-      <object class="GtkEventBox" id="eventbox">
+-        <property name="visible">True</property>
+-        <property name="visible_window">True</property>
+-        <property name="above_child">False</property>
+-        <child>
+-          <object class="GtkHBox" id="hbox3019">
+-            <property name="border_width">4</property>
+-            <property name="visible">True</property>
+-            <property name="homogeneous">False</property>
+-            <property name="spacing">6</property>
+-            <child>
+-              <object class="GtkImage" id="notification_image">
+-                <property name="width_request">68</property>
+-                <property name="height_request">86</property>
+-                <property name="visible">True</property>
+-                <property name="xalign">0.5</property>
+-                <property name="yalign">0.5</property>
+-                <property name="xpad">0</property>
+-                <property name="ypad">0</property>
+-              </object>
+-              <packing>
+-                <property name="padding">0</property>
+-                <property name="expand">False</property>
+-                <property name="fill">False</property>
+-              </packing>
+-            </child>
+-            <child>
+-              <object class="GtkVBox" id="vbox111">
+-                <property name="visible">True</property>
+-                <property name="homogeneous">False</property>
+-                <property name="spacing">0</property>
+-                <child>
+-                  <object class="GtkHBox" id="hbox3020">
+-                    <property name="visible">True</property>
+-                    <property name="homogeneous">False</property>
+-                    <property name="spacing">0</property>
+-                    <child>
+-                      <object class="GtkLabel" id="event_type_label">
+-                        <property name="width_request">196</property>
+-                        <property name="visible">True</property>
+-                        <property name="label">Event Type</property>
+-                        <property name="use_underline">False</property>
+-                        <property name="use_markup">True</property>
+-                        <property name="justify">GTK_JUSTIFY_LEFT</property>
+-                        <property name="wrap">True</property>
+-                        <property name="selectable">False</property>
+-                        <property name="xalign">0.5</property>
+-                        <property name="yalign">0.5</property>
+-                        <property name="xpad">0</property>
+-                        <property name="ypad">0</property>
+-                        <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+-                        <property name="width_chars">-1</property>
+-                        <property name="single_line_mode">False</property>
+-                        <property name="angle">0</property>
+-                      </object>
+-                      <packing>
+-                        <property name="padding">0</property>
+-                        <property name="expand">False</property>
+-                        <property name="fill">True</property>
+-                      </packing>
+-                    </child>
+-                    <child>
+-                      <object class="GtkButton" id="close_button">
+-                        <property name="visible">True</property>
+-                        <property name="relief">GTK_RELIEF_NONE</property>
+-                        <property name="focus_on_click">True</property>
+-                        <signal handler="on_close_button_clicked" last_modification_time="Tue, 12 Apr 2005 12:48:32 GMT" name="clicked"/>
+-                        <child>
+-                          <object class="GtkImage" id="image496">
+-                            <property name="visible">True</property>
+-                            <property name="stock">gtk-close</property>
+-                            <property name="icon_size">1</property>
+-                            <property name="xalign">0.5</property>
+-                            <property name="yalign">0.5</property>
+-                            <property name="xpad">0</property>
+-                            <property name="ypad">0</property>
+-                          </object>
+-                        </child>
+-                      </object>
+-                      <packing>
+-                        <property name="padding">0</property>
+-                        <property name="expand">False</property>
+-                        <property name="fill">False</property>
+-                      </packing>
+-                    </child>
+-                  </object>
+-                  <packing>
+-                    <property name="padding">0</property>
+-                    <property name="expand">False</property>
+-                    <property name="fill">True</property>
+-                  </packing>
+-                </child>
+-                <child>
+-                  <object class="GtkLabel" id="event_description_label">
+-                    <property name="width_request">218</property>
+-                    <property name="height_request">64</property>
+-                    <property name="visible">True</property>
+-                    <property name="label">Event desc</property>
+-                    <property name="use_underline">False</property>
+-                    <property name="use_markup">False</property>
+-                    <property name="justify">GTK_JUSTIFY_LEFT</property>
+-                    <property name="wrap">True</property>
+-                    <property name="selectable">False</property>
+-                    <property name="xalign">0.5</property>
+-                    <property name="yalign">0.5</property>
+-                    <property name="xpad">0</property>
+-                    <property name="ypad">0</property>
+-                    <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+-                    <property name="width_chars">-1</property>
+-                    <property name="single_line_mode">False</property>
+-                    <property name="angle">0</property>
+-                  </object>
+-                  <packing>
+-                    <property name="padding">0</property>
+-                    <property name="expand">True</property>
+-                    <property name="fill">True</property>
+-                  </packing>
+-                </child>
+-              </object>
+-              <packing>
+-                <property name="padding">0</property>
+-                <property name="expand">True</property>
+-                <property name="fill">True</property>
+-              </packing>
+-            </child>
+-          </object>
+-        </child>
+-      </object>
+-    </child>
+-  </object>
+-</interface>
+-"""
+-
+-class PopupNotificationWindow:
+-    def __init__(self, title=None, path_to_image=None, 
+-                 text=None, bg_color=BG_COLOR, timeout=8000):
+-        xml = gtk.Builder()
+-        xml.add_from_string(XML_WINDOW)
+-        
+-        self.window = xml.get_object('popup_notification_window')
+-
+-        if gtk.gtk_version >= (2, 10, 0) and gtk.pygtk_version >= (2, 10, 0):
+-                self.window.set_type_hint(gtk.gdk.WINDOW_TYPE_HINT_TOOLTIP)
+-
+-        close_button = xml.get_object('close_button')
+-        event_type_label = xml.get_object('event_type_label')
+-        event_description_label = xml.get_object('event_description_label')
+-        eventbox = xml.get_object('eventbox')
+-        image = xml.get_object('notification_image')
+-            
+-        if not text:
+-            text = ''
+-        if not title:
+-            title = ''
+-
+-        event_type_label.set_markup(
+-                '<span foreground="black" weight="bold">%s</span>' %
+-                gobject.markup_escape_text(title))
+-
+-        # set colors [ http://www.pitt.edu/~nisg/cis/web/cgi/rgb.html ]
+-        self.window.modify_bg(gtk.STATE_NORMAL, gtk.gdk.color_parse('black'))
+-
+-        popup_bg_color = gtk.gdk.color_parse(bg_color)
+-        close_button.modify_bg(gtk.STATE_NORMAL, popup_bg_color)
+-        eventbox.modify_bg(gtk.STATE_NORMAL, popup_bg_color)
+-        event_description_label.set_markup('<span foreground="black">%s</span>' %
+-                                           gobject.markup_escape_text(text))
+-
+-        # set the image
+-        image.set_from_file(path_to_image)
+-
+-        # position the window to bottom-right of screen
+-        window_width, self.window_height = self.window.get_size()
+-        popup_manager.popups_notification_height += self.window_height
+-		
+-        pos_x = gtk.gdk.screen_width() - window_width + 1 + POS_X
+-        pos_y = gtk.gdk.screen_height() - \
+-            popup_manager.popups_notification_height + 1 + POS_Y
+-        self.window.move(pos_x, pos_y)
+-		
+-        xml.connect_signals(self)
+-        self.window.show_all()
+-        gobject.timeout_add(timeout, self.on_timeout)
+-            
+-        popup_manager.popup_notification_windows.append(self)
+-
+-    def on_close_button_clicked(self, widget):
+-        self.adjust_height_and_move_popup_notification_windows()
+-
+-    def on_timeout(self):
+-        self.adjust_height_and_move_popup_notification_windows()
+-
+-    def adjust_height_and_move_popup_notification_windows(self):
+-        # remove
+-        popup_manager.popups_notification_height -= self.window_height
+-        self.window.destroy()
+-
+-        if len(popup_manager.popup_notification_windows) > 0:
+-            # we want to remove the first window added in the list
+-            popup_manager.popup_notification_windows.pop(0)
+-
+-        # move the rest of popup windows
+-        popup_manager.popups_notification_height = 0
+-        for window_instance in popup_manager.popup_notification_windows:
+-            window_width, window_height = window_instance.window.get_size()
+-            popup_manager.popups_notification_height += window_height
+-            window_instance.window.move(gtk.gdk.screen_width() - window_width,
+-                                        gtk.gdk.screen_height() - \
+-                                                popup_manager.popups_notification_height)
+-
+-    def on_popup_notification_window_button_press_event(self, widget, event):
+-        if event.button != 1:
+-                self.window.destroy()
+-                return
+-        self.adjust_height_and_move_popup_notification_windows()
+-
+-if notify_daemon_support:
+-    class NotificationDaemonWindow:
+-        def __init__(self, title=None, text=None, 
+-                     path_to_image=None, bg_color=BG_COLOR,
+-                     timeout=5000):
+-            if not notify_init:
+-                raise ProgrammingError, "Please init pynotify with 'popup_init'"
+-
+-            self.notification = pynotify.Notification(title, text, path_to_image)
+-            self.notification.set_timeout(timeout)
+-            self.notification.show()
+-
+-if notify_daemon_support:
+-    Popup = NotificationDaemonWindow
+-else:
+-    Popup = PopupNotificationWindow
+-
+-if __name__ == "__main__":
+-    popup_init("openlh-teste")
+-    Popup(title="macumbaria", path_to_image="/usr/share/icons/hicolor/48x48/apps/devhelp.png")
+-    Popup(title="macumbaria", path_to_image="/usr/share/icons/hicolor/48x48/apps/emacs.png")
+-    Popup(title="macumbaria", path_to_image="/usr/share/icons/hicolor/48x48/apps/emacs.png")
+-    Popup(title="Teste", text="<b>t</b>estando")
+-    gobject.timeout_add_seconds(2, Popup, "macumbaria", "teste")
+-    gtk.main()
+diff --git a/src/fakeserver/views.py b/src/fakeserver/views.py
+index 19397d4..f2a4a1d 100644
+--- a/src/fakeserver/views.py
++++ b/src/fakeserver/views.py
+@@ -8,13 +8,13 @@ def proxy(request):
+     if cmd == 'login':
+         username = request.POST.get('username', '')
+         password = request.POST.get('password', '')
+-        return JSONResponse({'authenticated': True, 'error': None, 'full_name': "Junao", 'time': 15, 'http_proxy': proxy})
++        return JSONResponse({'authenticated': True, 'error': None, 'full_name': "Junao", 'time': 360, 'up_apps': [['firefox', 'http://www.gmail.com'], ['xterm', '-c', 'python']]})#, 'http_proxy': proxy})
+ 
+     elif cmd == 'identify':
+         return JSONResponse({'name': 'Xuxu na Feira',})
+ 
+     elif cmd == 'check_time':
+-        return JSONResponse({'logout': False, 'clean_apps': False, 'error': None, 'full_name': "Junao", 'time': 150, 'http_proxy': proxy})
++        return JSONResponse({'logout': True, 'clean_apps': ['pidgin', 'rhythmbox'], 'error': None, 'full_name': "Junao", 'time': 150, 'after_action':0})#, 'http_proxy': proxy})
+ 
+     elif cmd == 'logout':
+-        return JSONResponse({'error': None})
++        return JSONResponse({'error': None, 'clean_apps': ['pidgin', 'rhythmbox']})

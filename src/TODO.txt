@@ -21,4 +21,4 @@ TODO:
 * Logo do programa - muito baixa
 * Tradução via - gettext - média
 * Gerar um ./configure e make debian - media
-* Documentar em UML - Media-Alta
+* Documentar em UML para o PHP implementar - Media-Alta

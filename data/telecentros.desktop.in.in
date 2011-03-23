@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+_Name=Cliente TeleCentros
+_Comment=Abre o Cliente Telecentros
+TryExec=telecentros
+Exec=telecentros
+Icon=telecentros
+Type=Application
+Categories=GNOME;GTK;Network;
+StartupNotify=true
