@@ -416,18 +416,18 @@ class Client:
             if obj.has_key('name') and obj['name']:
                 self.login_window.set_title(obj['name'])
 
-            if obj.has_key('welcome-msg') and obj['welcome-msg']:
-                self.login_window.set_welcome_msg(obj['welcome-msg'])
+            if obj.has_key('welcome_msg') and obj['welcome_msg']:
+                self.login_window.set_welcome_msg(obj['welcome_msg'])
 
-            if obj.has_key('sign-url') and obj['sign-url']:
-                self.sign_url = obj['sign-url']
+            if obj.has_key('sign_url') and obj['sign_url']:
+                self.sign_url = obj['sign_url']
                 self.login_window.register_bnt.set_sensitive(True)
             else:
                 self.sign_url = None #explict
                 self.login_window.register_bnt.set_sensitive(False)
 
-            if obj.has_key('background-url') and obj['background-url']:
-                err = self.get_background(obj['background-url'])
+            if obj.has_key('background_url') and obj['background_url']:
+                err = self.get_background(obj['background_url'])
                 if err:
                     print err
                 else:
@@ -435,8 +435,8 @@ class Client:
             else:
                 self.login_window.set_background(None)
 
-            if obj.has_key('logo-url') and obj['logo-url']:
-                err = self.get_logo(obj['logo-url'])
+            if obj.has_key('logo_url') and obj['logo_url']:
+                err = self.get_logo(obj['logo_url'])
                 if err:
                     print err
                 else:
