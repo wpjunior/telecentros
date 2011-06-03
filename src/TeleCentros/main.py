@@ -324,8 +324,8 @@ class Client:
             self.unblock(rtime)
 
             if obj.has_key('full_name') and obj['full_name']:
-                self.full_name.set_text(obj['full_name'])
-                self.dbus_manager.full_name_changed(obj['full_name'])
+                self.full_name.set_text(obj['full_name'].strip())
+                self.dbus_manager.full_name_changed(obj['full_name'].strip())
 
             if obj.has_key('http_proxy') and obj['http_proxy']:
                 self.set_proxy(obj['http_proxy'])
@@ -538,13 +538,13 @@ class Client:
 
     def set_proxy(self, obj):
         if obj.has_key('username'):
-            self.proxy_setter.username = obj['username']
+            self.proxy_setter.username = obj['username'].strip()
 
         if obj.has_key('password'):
-            self.proxy_setter.password = obj['password']
+            self.proxy_setter.password = obj['password'].strip()
 
         if obj.has_key('host'):
-            self.proxy_setter.host = obj['host']
+            self.proxy_setter.host = obj['host'].strip()
 
         if obj.has_key('port'):
             self.proxy_setter.port = int(obj['port'])
