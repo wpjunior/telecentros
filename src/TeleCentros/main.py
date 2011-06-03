@@ -516,7 +516,7 @@ class Client:
                     self.start_apps(up_apps)
 
             if obj.has_key('full_name') and obj['full_name']:
-                self.full_name.set_text(obj['full_name'])
+                self.full_name.set_text(obj['full_name'].strip())
                 self.dbus_manager.full_name_changed(obj['full_name'])
 
             if obj.has_key('http_proxy') and obj['http_proxy']:
@@ -585,10 +585,10 @@ class Client:
     def start_apps(self, apps):
         for app in apps:
             if not isinstance(app, list):
-                app = [app]
+                app = [app.strip()]
 
             for i in range(len(app)): #hack set str
-                app[i] = str(app[i])
+                app[i] = str(app[i]).strip()
                 
             po = subprocess.Popen(app, stdin=None, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE)
