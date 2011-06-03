@@ -27,7 +27,7 @@ import traceback
 from time import sleep
 import json
 from TeleCentros.globals import DEFAULT_PATH
-
+headers = {"Content-type": "application/x-www-form-urlencoded"}
 """
 * Request
 b|Done
@@ -124,7 +124,7 @@ class JSONRequester:
     def process_request(self, request):
         try:
             conn = httplib.HTTPConnection(self.host, self.port, timeout=10)
-            conn.request(request.method, self.path, urllib.urlencode(request.request_data))
+            conn.request(request.method, self.path, urllib.urlencode(request.request_data), headers)
         except Exception, e:
             request.error = e
             self.fail_requests.append(request)
@@ -133,7 +133,8 @@ class JSONRequester:
         request.http = conn.getresponse()
         request.content_type = request.http.getheader('content-type', '')
         request.data = request.http.read()
-
+        
+        print repr(request.data)
         if request.http.status == 200 and request.content_type == 'application/json':
             request.json_data = json.loads(request.data)
 
