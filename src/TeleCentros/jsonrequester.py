@@ -62,7 +62,7 @@ class Request:
         self.error = None
 
 class JSONRequester:
-    def __init__ (self, host, port=None, path="/proxy/"):
+    def __init__ (self, host, port=None, path="/telecentros/proxy/"):
         
         self.host = host
         self.port = port
