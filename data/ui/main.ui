@@ -1,49 +1,6 @@
 <?xml version="1.0"?>
 <!--*- mode: xml -*-->
 <interface>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="menuitem1">
-            <property name="name">menuitem1</property>
-            <property name="label" translatable="yes">_Arquivo</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="logout_menuitem">
-            <property name="stock_id">gtk-disconnect</property>
-            <property name="name">logout_menuitem</property>
-            <property name="label" translatable="yes">_Sair</property>
-            <signal handler="on_logout_menuitem_activate" name="activate"/>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="menuitem4">
-            <property name="name">menuitem4</property>
-            <property name="label" translatable="yes">A_juda</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="about_menuitem">
-            <property name="stock_id" translatable="yes">gtk-about</property>
-            <property name="name">about_menuitem</property>
-            <signal handler="on_about_menuitem_activate" name="activate"/>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="menubar1">
-        <menu action="menuitem1">
-          <menuitem action="logout_menuitem"/>
-        </menu>
-        <menu action="menuitem4">
-          <menuitem action="about_menuitem"/>
-        </menu>
-      </menubar>
-    </ui>
-  </object>
   <object class="GtkUIManager" id="uimanager2">
     <child>
       <object class="GtkActionGroup" id="actiongroup2">
@@ -88,15 +45,6 @@
     <child>
       <object class="GtkVBox" id="vbox3">
         <property name="visible">True</property>
-        <child>
-          <object class="GtkMenuBar" constructor="uimanager1" id="menubar1">
-            <property name="visible">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkVBox" id="vbox4">
             <property name="visible">True</property>
@@ -295,9 +243,51 @@
           </object>
           <packing>
             <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        
+        
+        <child>
+      <object class="GtkHButtonBox" id="hbuttonbox1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkButton" id="button1">
+            <property name="label">gtk-disconnect</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+            <property name="use_stock">True</property>
+            <signal name="clicked" handler="on_logout_menuitem_activate" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button2">
+            <property name="label">gtk-about</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="use_action_appearance">False</property>
+            <property name="use_stock">True</property>
+            <signal name="clicked" handler="on_about_menuitem_activate" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
             <property name="position">2</property>
           </packing>
         </child>
+      </object>
+    </child>
+        
+        
         <child>
           <object class="GtkStatusbar" id="statusbar1">
             <property name="visible">True</property>
