@@ -1,3 +1,9 @@
+telecentros (0.1.2) unstable; urgency=low
+
+  * fix bugs
+
+ -- Wilson Pinto Júnior <wilson@openlanhouse.org> Mon, 09 Oct 2011 13:01:50 -0200
+
 telecentros (0.1) unstable; urgency=low
 
   * Initial release from upstream

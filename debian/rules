@@ -62,7 +62,7 @@ install: build
 	dh_installdirs
 
 	# Add here commands to install the package into debian/openlh-client.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/openlh-client install
+	$(MAKE) DESTDIR=$(CURDIR)/debian/telecentros install
 
 
 # Build architecture-independent files here.

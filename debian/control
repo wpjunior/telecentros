@@ -1,12 +1,12 @@
-Source: openlh-client
+Source: telecentros
 Section: gnome
 Priority: extra
 Maintainer: Wilson Pinto Júnior <wilson@openlanhouse.org>
 Build-Depends: debhelper (>= 6), autotools-dev, libpanel-applet2-dev, libdbus-glib-1-dev, 
 Standards-Version: 3.7.3
-Homepage: http://openlanhouse.org
+Homepage: http://lethus.com.br
 
-Package: openlh-client
+Package: telecentros
 Architecture: i386
 Depends: ${shlibs:Depends}, ${misc:Depends}, openlh-core, python-gtk2, python-dbus
-Description: a LAN House and Cyber Caffe Client for GNOME Desktop.
+Description: Cliente do Telecentros
