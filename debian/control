@@ -8,5 +8,5 @@ Homepage: http://lethus.com.br
 
 Package: telecentros
 Architecture: i386
-Depends: ${shlibs:Depends}, ${misc:Depends}, openlh-core, python-gtk2, python-dbus
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-gtk2, python-dbus
 Description: Cliente do Telecentros
